@@ -52,7 +52,24 @@ def parse_arg():
     parser.add_argument("--spark-version", default="3.1.1", help="Spark version, if you specified --provided-spark" +
                         "option, it should match with provided spark version")
     parser.add_argument("--java-version", default="8", help="Java version, Only 8 or 11 are supported")
+    parser.add_argument("--zookeeper-version", default="3.6.2", help="Zookeeper version")
+    parser.add_argument("--hue-version", default="4.9.0", help="Docker hue version")
     return parser.parse_args()
+
+
+def componentVersions(args):
+    version = {
+        "java": args.jave_version,
+        "hadoop": args.hadoop_version,
+        "zookeeper": args.zookeeper_version
+    }
+    if args.hive or args.all:
+        version["hive"] = args.hive
+    if args.spark_thrift or args.all:
+        version["spark"] = args.spark_version
+    if args.hue or args.all:
+        version["hue"] = args.hue_version
+    return version
 
 
 def get_instances(args):
