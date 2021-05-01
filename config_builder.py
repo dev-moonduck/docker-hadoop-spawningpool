@@ -1,11 +1,11 @@
 def build_config_from_args(args):
     return {
-        "dependencyVersions": _componentVersions(args),
+        "dependencyVersions": _component_versions(args),
         "instances": _instances(args)
     }
 
 
-def _componentVersions(args):
+def _component_versions(args):
     version = {
         "java": args.jave_version,
         "hadoop": args.hadoop_version,
