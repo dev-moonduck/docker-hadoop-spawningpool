@@ -1,7 +1,8 @@
 def build_config_from_args(args):
     return {
         "dependencyVersions": _component_versions(args),
-        "instances": _instances(args)
+        "instances": _instances(args),
+        "component-bin": _provided_bins(args)
     }
 
 
@@ -72,3 +73,14 @@ def _instances(args):
         all_instances["secondary-namenode"]["ports"] += ["8888:8888"]
 
     return all_instances
+
+
+def _provided_bins(args):
+    paths = {}
+    hadoop_bin_path = args.provided_hadoop
+    if hadoop_bin_path:
+        paths["hadoop"] = hadoop_bin_path
+    spark_bin_path = args.provided_spark
+    if spark_bin_path:
+        paths["spark"] = spark_bin_path
+    return paths
