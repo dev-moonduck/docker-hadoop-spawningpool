@@ -2,8 +2,26 @@ def build_config_from_args(args):
     return {
         "dependencyVersions": _component_versions(args),
         "instances": _instances(args),
-        "component-bin": _provided_bins(args)
+        "component-bin": _provided_bins(args),
+        "hosts": _component_hosts(args)
     }
+
+
+def _component_hosts(args):
+    hosts = {
+        "primary-namenode": "primary-namenode1",
+        "secondary-namenode": "secondary-namenode1",
+        "datanode": ["datanode1"],
+        "journalnode": ["journalnode1", "journalnode2", "journalnode3"],
+        "zookeeper": ["zookeeper1", "zookeeper2", "zookeeper3"]
+    }
+    for i in range(2, args.num_datanode):
+        hosts["datanode"] += ("datanode" + i)
+    if args.hive or args.all:
+        hosts["hive-server"] = "hive-server"
+        hosts["hive-metastore"] = "hive-metastore"
+    if args.spark_thrift or args.all:
+        hosts["spark-thrift"] = "spark-thrift"
 
 
 def _component_versions(args):
@@ -26,19 +44,19 @@ def _instances(args):
     all_instances = {
         "primary-namenode": {
             "hosts": ["primary-namenode1", "namenode1", "nameservice1", "journalnode1", "resource-manager",
-                      "yarn-history"],
+                      "yarn-history", "zookeeper1"],
             "components": ["primary-namenode", "journalnode", "resource-manager", "yarn-history"],
             "image": "hadoop",
             "ports": ["9870:9870", "8088:8088"]
         },
         "secondary-namenode": {
-            "hosts": ["secondary-namenode1", "namenode2", "journalnode2", "spark-history"],
+            "hosts": ["secondary-namenode1", "namenode2", "journalnode2", "spark-history", "zookeeper2"],
             "components": ["secondary-namenode", "journalnode"],
             "image": "hadoop",
             "ports": ["9871:9870", "18080:18080"]
         },
         "datanode1": {
-            "hosts": ["datanode1", "journalnode2"],
+            "hosts": ["datanode1", "journalnode3", "zookeeper3"],
             "components": ["datanode", "journalnode"],
             "image": "hadoop",
             "ports": ["9864:9864"]
