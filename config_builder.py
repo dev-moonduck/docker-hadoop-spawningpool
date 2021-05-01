@@ -7,7 +7,7 @@ def build_config_from_args(args):
 
 def _component_versions(args):
     version = {
-        "java": args.jave_version,
+        "java": args.java_version,
         "hadoop": args.hadoop_version,
         "zookeeper": args.zookeeper_version
     }

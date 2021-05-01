@@ -30,7 +30,7 @@ def parse_arg():
 
 def run():
     args = parse_arg()
-    template_data = config_builder.get_instances(args)
+    template_data = config_builder.build_config_from_args(args)
     print(template_data)
 
 
