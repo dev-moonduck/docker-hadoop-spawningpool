@@ -1,0 +1,58 @@
+FROM openjdk:{{dependencyVersions["java"]}}-jdk-slim
+
+MAINTAINER Mun Duk Hyun <dev.moonduck@gmail.com>
+
+# Install dependencies
+ARG HADOOP_ARCHIVE_URL="https://www.apache.org/dist/hadoop"
+ENV HADOOP_URL ${HADOOP_ARCHIVE_URL}/common/hadoop-{{dependencyVersions["hadoop"]}}/hadoop-{{dependencyVersions["hadoop"]}}.tar.gz
+ENV ZOOKEEPER_HOME=/opt/zookeeper
+ENV HADOOP_HOME=/opt/hadoop-{{dependencyVersions["hadoop"]}}
+ENV HADOOP_CONF_DIR=/etc/hadoop
+ENV PATH=$HADOOP_HOME/bin/:$PATH
+
+{% if binary["hadoop"] -%}
+COPY {{binary["hadoop"]}} /tmp/hadoop.tar.gz
+{% endif -%}
+RUN apt update && DEBIAN_FRONTEND=noninteractive apt install -y --no-install-recommends \
+      net-tools \
+      curl \
+      netcat \
+      gnupg \
+      libsnappy-dev \
+      procps \
+      python3 \
+    && rm -rf /var/lib/apt/lists/* \
+    && set -x \
+    {% if not binary["hadoop"] -%}
+    && curl -O https://dist.apache.org/repos/dist/release/hadoop/common/KEYS && gpg --import KEYS \
+    && curl -fSL "$HADOOP_URL" -o /tmp/hadoop.tar.gz \
+    && curl -fSL "$HADOOP_URL.asc" -o /tmp/hadoop.tar.gz.asc \
+    && gpg --verify /tmp/hadoop.tar.gz.asc \
+    {% endif -%}
+    && tar -xvf /tmp/hadoop.tar.gz -C /opt/ \
+    && rm /tmp/hadoop.tar.gz* \
+    && ln -s /opt/hadoop-{{dependencyVersions["hadoop"]}}/etc/hadoop /etc/hadoop \
+    && mkdir /opt/hadoop-{{dependencyVersions["hadoop"]}}/logs \
+    && mkdir -p /hadoop-data/ && mkdir -p /prerun && mkdir -p /postrun && mkdir -p /config && mkdir -p /scripts && mkdir -p /env
+
+# Zookeeper
+COPY --from=zookeeper:3.6.2 /apache-zookeeper-3.6.2-bin /opt/zookeeper
+
+# Define linux user and groups for hadoop users
+RUN {% for name, gid in groups.items() -%}
+    {% if loop.first is false %}&&{% endif %} groupadd --gid {{gid}} {{name}} \
+{% endfor %}{% for name, user in users.items() -%}
+    && useradd --uid {{user['uid']}} --no-log-init --gid {{user['gid']}} --shell /bin/bash -p {{name}} {{name}} {% if loop.last is false %}\{% endif %}
+{% endfor -%}
+
+COPY scripts/ /scripts/
+
+RUN /scripts/add_proxy_users.sh \
+    && mkdir -p /hadoop/dfs/name \
+    && mkdir -p /hadoop/yarn/timeline \
+    && mkdir -p /hadoop/dfs/data \
+    && mkdir -p /opt/zookeeper/data
+
+ENTRYPOINT ["/scripts/entrypoint.sh"]
+
+CMD ["/bin/bash"]

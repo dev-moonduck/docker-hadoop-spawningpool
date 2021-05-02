@@ -21,7 +21,7 @@ def build_config_from_args(args):
     return {
         "dependencyVersions": _component_versions(args),
         "instances": _instances(args),
-        "component-bin": _provided_bins(args),
+        "binary": _provided_bins(args),
         "hosts": _component_hosts(args),
         "groups": PREDEF_GROUPS,
         "users": PREDEF_USERS
