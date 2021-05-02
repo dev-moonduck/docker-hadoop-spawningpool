@@ -3,16 +3,16 @@ FROM openjdk:{{dependencyVersions["java"]}}-jdk-slim
 MAINTAINER Mun Duk Hyun <dev.moonduck@gmail.com>
 
 # Install dependencies
-ARG HADOOP_ARCHIVE_URL="https://www.apache.org/dist/hadoop"
-ENV HADOOP_URL ${HADOOP_ARCHIVE_URL}/common/hadoop-{{dependencyVersions["hadoop"]}}/hadoop-{{dependencyVersions["hadoop"]}}.tar.gz
 ENV ZOOKEEPER_HOME=/opt/zookeeper
 ENV HADOOP_HOME=/opt/hadoop-{{dependencyVersions["hadoop"]}}
 ENV HADOOP_CONF_DIR=/etc/hadoop
 ENV PATH=$HADOOP_HOME/bin/:$PATH
-
-{% if binary["hadoop"] -%}
+{% if not binary["hadoop"] -%}
+ARG HADOOP_ARCHIVE_URL="https://www.apache.org/dist/hadoop"
+ENV HADOOP_URL ${HADOOP_ARCHIVE_URL}/common/hadoop-{{dependencyVersions["hadoop"]}}/hadoop-{{dependencyVersions["hadoop"]}}.tar.gz
+{% else %}
 COPY {{binary["hadoop"]}} /tmp/hadoop.tar.gz
-{% endif -%}
+{% endif %}
 RUN apt update && DEBIAN_FRONTEND=noninteractive apt install -y --no-install-recommends \
       net-tools \
       curl \
