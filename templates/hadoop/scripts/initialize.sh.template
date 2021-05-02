@@ -1,0 +1,20 @@
+#!/bin/bash
+
+SAFE_MODE_STATUS=`hdfs dfsadmin -safemode get`
+if [ "$SAFE_MODE_STATUS" = "Safe mode is ON" ]; then
+    echo "Leaving safemode"
+    hdfs dfsadmin -safemode leave
+fi
+
+# create users in hdfs
+USERS={{ "(\"" + (users | keys | join("\" \"")) + "\")" }}
+for user in "${USERS[@]}"; do
+    user_path_in_hdfs="/user/$user"
+    path_exist=`hdfs dfs -ls $user_path_in_hdfs`
+    if [ "$path_exist" = "" ]; then
+        owner="$user:$user"
+        echo "creating user home $user_path_in_hdfs owned by $owner"
+        hdfs dfs -mkdir -p $user_path_in_hdfs
+        hdfs dfs -chown $owner $user_path_in_hdfs
+    fi 
+done
