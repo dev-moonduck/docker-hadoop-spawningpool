@@ -3,17 +3,17 @@ PREDEF_GROUPS = {
 }
 
 PREDEF_USERS = {
-  "hdfs": { "uid": 180, "gid": [PREDEF_GROUPS["admin"]], "isSvc": True },
-  "webhdfs": { "uid": 181, "gid": [PREDEF_GROUPS["admin"]], "isSvc": True },
-  "hive": { "uid": 182, "gid": [PREDEF_GROUPS["hadoopsvc"]], "isSvc": True },
-  "hue": { "uid": 183, "gid": [PREDEF_GROUPS["hadoopsvc"]], "isSvc": True },
-  "spark": { "uid": 184, "gid": [PREDEF_GROUPS["hadoopsvc"]], "isSvc": True },
-  "bi_user": { "uid": 185, "gid": [PREDEF_GROUPS["dataplatform_user"]], "isSvc": False },
-  "bi_svc": { "uid": 186, "gid": [PREDEF_GROUPS["usersvc"]], "isSvc": True },
-  "ml_user": { "uid": 187, "gid": [PREDEF_GROUPS["dataplatform_user"]], "isSvc": False },
-  "ml_svc": { "uid": 188, "gid": [PREDEF_GROUPS["usersvc"]], "isSvc": True },
-  "de_user": { "uid": 189, "gid": [PREDEF_GROUPS["dataplatform_user"]], "isSvc": False },
-  "de_svc": { "uid": 190, "gid": [PREDEF_GROUPS["usersvc"]], "isSvc": True }
+  "hdfs": { "uid": 180, "groups": ["admin"], "isSvc": True },
+  "webhdfs": { "uid": 181, "groups": ["admin"], "isSvc": True },
+  "hive": { "uid": 182, "groups": ["hadoopsvc"], "isSvc": True },
+  "hue": { "uid": 183, "groups": ["hadoopsvc"], "isSvc": True },
+  "spark": { "uid": 184, "groups": ["hadoopsvc"], "isSvc": True },
+  "bi_user": { "uid": 185, "groups": ["dataplatform_user"], "isSvc": False },
+  "bi_svc": { "uid": 186, "groups": ["usersvc"], "isSvc": True },
+  "ml_user": { "uid": 187, "groups": ["dataplatform_user"], "isSvc": False },
+  "ml_svc": { "uid": 188, "groups": ["usersvc"], "isSvc": True },
+  "de_user": { "uid": 189, "groups": ["dataplatform_user"], "isSvc": False },
+  "de_svc": { "uid": 190, "groups": ["usersvc"], "isSvc": True }
 }
 
 

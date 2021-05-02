@@ -42,7 +42,7 @@ COPY --from=zookeeper:3.6.2 /apache-zookeeper-3.6.2-bin /opt/zookeeper
 RUN {% for name, gid in groups.items() -%}
     {% if loop.first is false %}&&{% endif %} groupadd --gid {{gid}} {{name}} \
 {% endfor %}{% for name, user in users.items() -%}
-    && useradd --uid {{user['uid']}} --no-log-init --gid {{user['gid']}} --shell /bin/bash -p {{name}} {{name}} {% if loop.last is false %}\{% endif %}
+    && useradd --uid {{user['uid']}} --no-log-init -G {{user['groups']|join(",")}} --shell /bin/bash -p {{name}} {{name}} {% if loop.last is false %}\{% endif %}
 {% endfor -%}
 
 COPY scripts/ /scripts/
