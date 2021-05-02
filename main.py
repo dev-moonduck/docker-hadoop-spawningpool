@@ -2,6 +2,8 @@ import argparse
 from pathlib import Path
 import config_builder
 import file_handler
+import traceback
+import utils
 
 BASE_PATH = Path(__file__).parent.absolute()
 
@@ -30,9 +32,15 @@ def parse_arg():
 
 def run():
     args = parse_arg()
-    template_data = config_builder.build_config_from_args(args)
-    print(template_data)
-    file_handler.copy_all_non_templates(["hadoop"])
+    try:
+        template_data = config_builder.build_config_from_args(args)
+        images_to_build = utils.get_images_to_build(template_data)
+        file_handler.copy_all_non_templates(images_to_build)
+
+    except:
+        traceback.print_exception()
+        print("Template data: {}".format(template_data))
+        exit(-1)
 
 
 if __name__ == '__main__':
