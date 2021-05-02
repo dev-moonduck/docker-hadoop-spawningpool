@@ -2,9 +2,7 @@ import argparse
 import pathlib
 import config_builder
 
-
-BASE_PATH = pathlib.Path(__file__).parent.absolute()
-
+BASE_PATH = Path(__file__).parent.absolute()
 
 
 def parse_arg():
