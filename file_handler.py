@@ -20,6 +20,7 @@ def _copy_template_to_target(relative_path):
     target = os.path.join(BASE_PATH, TARGET_DIR, relative_path)
     Path(target).parent.mkdir(parents=True, exist_ok=True)
     shutil.copy2(src, target)
+    return target
 
 
 def copy_all_non_templates(base_components):
@@ -30,7 +31,9 @@ def copy_all_non_templates(base_components):
         src_base_path = Path(TEMPLATE_PATH)
         for non_template in without_templates:
             relative_path = Path(non_template).relative_to(src_base_path)
-            _copy_template_to_target(relative_path)
+            copied = Path(_copy_template_to_target(relative_path))
+            if copied.suffix == ".sh" or copied.suffix == ".py":
+                os.chmod(copied, 0o744)
 
 
 def _write_file(dest, content):
@@ -38,6 +41,8 @@ def _write_file(dest, content):
     dest.parent.mkdir(parents=True, exist_ok=True)
     with open(str(dest), "w") as f:
         f.write(content)
+    if dest.suffix == ".sh" or dest.suffix == ".py":
+        os.chmod(dest, 0o744)
 
 
 def write_all_templates(base_components, template_engine, data):
