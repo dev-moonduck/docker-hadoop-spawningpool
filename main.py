@@ -1,11 +1,13 @@
 import argparse
-import pathlib
+from pathlib import Path
 import config_builder
+import file_handler
 
 BASE_PATH = Path(__file__).parent.absolute()
 
 
 def parse_arg():
+    # Todo: Target clean up option
     parser = argparse.ArgumentParser(description="Docker hadoop compose yaml generator")
     parser.add_argument("--num-datanode", default=1, type=int, help="number of datanode. Default 3")
     parser.add_argument("--hive", action='store_true', help="build hive server, metastore")
@@ -30,6 +32,7 @@ def run():
     args = parse_arg()
     template_data = config_builder.build_config_from_args(args)
     print(template_data)
+    file_handler.copy_all_non_templates(["hadoop"])
 
 
 if __name__ == '__main__':
