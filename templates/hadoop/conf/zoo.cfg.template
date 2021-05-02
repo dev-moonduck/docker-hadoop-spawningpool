@@ -5,4 +5,4 @@ initLimit=5
 syncLimit=2
 {% for node in hosts["zookeeper"] -%}
 server.{{loop.index}}={{node}}:2888:3888
-{%- endfor %}
+{% endfor -%}
