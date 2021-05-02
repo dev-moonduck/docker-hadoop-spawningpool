@@ -35,7 +35,9 @@ def copy_all_non_templates(base_components):
 
 def _write_file(dest, content):
     print("writing to {}...".format(dest))
-    print(content)
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    with open(str(dest), "w") as f:
+        f.write(content)
 
 
 def write_all_templates(base_components, template_engine, data):
@@ -47,4 +49,4 @@ def write_all_templates(base_components, template_engine, data):
         for template in templates:
             relative_path = Path(template).relative_to(src_base_path)
             rendered = template_engine.render(template, data)
-            _write_file(Path(os.path.join(BASE_PATH, TARGET_DIR, relative_path.stem)), rendered)
+            _write_file(Path(os.path.join(BASE_PATH, TARGET_DIR, os.path.splitext(relative_path)[0])), rendered)
