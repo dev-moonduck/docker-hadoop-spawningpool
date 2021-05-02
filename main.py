@@ -17,12 +17,14 @@ def parse_arg():
     parser.add_argument("--spark-thrift", action='store_true', help="build spark thrift server for adhoc query")
     parser.add_argument("--hue", action='store_true', help="build hue")
     parser.add_argument("--all", action='store_true', help="Equivalent to --hive --spark --spark-thrift --hue")
-    parser.add_argument("--provided-hadoop", help="If you already have hadoop tar, provide local path with this option")
+    parser.add_argument("--provided-hadoop", help="If you already have hadoop tar, provide local path(must be relative "
+                                                  + "path) with this option")
     parser.add_argument("--hadoop-version", default="3.3.0",
                         help="Hadoop version, if you specified --provided-hadoop option, it should match "
                              + "with provided hadoop version")
     parser.add_argument("--hive-version", default="3.1.2", help="Hive version")
-    parser.add_argument("--provided-spark", help="If you already have spark tar, provide local path with this option")
+    parser.add_argument("--provided-spark", help="If you already have spark tar, provide local path(must be relative "
+                                                 + "path with this option")
     parser.add_argument("--spark-version", default="3.1.1", help="Spark version, if you specified --provided-spark" +
                         "option, it should match with provided spark version")
     parser.add_argument("--java-version", default="8", help="Java version, Only 8 or 11 are supported")
