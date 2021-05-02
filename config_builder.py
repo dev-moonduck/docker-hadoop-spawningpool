@@ -1,9 +1,30 @@
+PREDEF_GROUPS = {
+  "admin": 150, "hadoop": 151, "hadoopsvc": 152, "usersvc": 154, "dataplatform_user": 155
+}
+
+PREDEF_USERS = {
+  "hdfs": { "uid": 180, "gid": [PREDEF_GROUPS["admin"]], "isSvc": True },
+  "webhdfs": { "uid": 181, "gid": [PREDEF_GROUPS["admin"]], "isSvc": True },
+  "hive": { "uid": 182, "gid": [PREDEF_GROUPS["hadoopsvc"]], "isSvc": True },
+  "hue": { "uid": 183, "gid": [PREDEF_GROUPS["hadoopsvc"]], "isSvc": True },
+  "spark": { "uid": 184, "gid": [PREDEF_GROUPS["hadoopsvc"]], "isSvc": True },
+  "bi_user": { "uid": 185, "gid": [PREDEF_GROUPS["dataplatform_user"]], "isSvc": False },
+  "bi_svc": { "uid": 186, "gid": [PREDEF_GROUPS["usersvc"]], "isSvc": True },
+  "ml_user": { "uid": 187, "gid": [PREDEF_GROUPS["dataplatform_user"]], "isSvc": False },
+  "ml_svc": { "uid": 188, "gid": [PREDEF_GROUPS["usersvc"]], "isSvc": True },
+  "de_user": { "uid": 189, "gid": [PREDEF_GROUPS["dataplatform_user"]], "isSvc": False },
+  "de_svc": { "uid": 190, "gid": [PREDEF_GROUPS["usersvc"]], "isSvc": True }
+}
+
+
 def build_config_from_args(args):
     return {
         "dependencyVersions": _component_versions(args),
         "instances": _instances(args),
         "component-bin": _provided_bins(args),
-        "hosts": _component_hosts(args)
+        "hosts": _component_hosts(args),
+        "groups": PREDEF_GROUPS,
+        "users": PREDEF_USERS
     }
 
 
@@ -22,6 +43,7 @@ def _component_hosts(args):
         hosts["hive-metastore"] = "hive-metastore"
     if args.spark_thrift or args.all:
         hosts["spark-thrift"] = "spark-thrift"
+    return hosts
 
 
 def _component_versions(args):
