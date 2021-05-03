@@ -25,8 +25,19 @@ def build_config_from_args(args):
         "binary": _provided_bins(args),
         "hosts": _component_hosts(args),
         "groups": PREDEF_GROUPS,
-        "users": PREDEF_USERS
+        "users": PREDEF_USERS,
+        "additional": _additional_config(args)
     }
+
+
+def _additional_config(args):
+    config = {}
+    if args.hive or args.all:
+        config["hive"] = {
+            "metastore-db-host": "cluster-db",
+            "metastore-db-name": "metastore"
+        }
+    return config
 
 
 def _component_hosts(args):
@@ -47,6 +58,9 @@ def _component_hosts(args):
     if args.spark_thrift or args.all:
         hosts["spark-thrift"] = "spark-thrift"
         hosts["spark-history"] = "spark-history"
+    if args.hue or args.all:
+        hosts["hue"] = "hue"
+        
     return hosts
 
 

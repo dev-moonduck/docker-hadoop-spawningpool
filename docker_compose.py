@@ -52,4 +52,24 @@ def generate_yaml(data):
                     "MY_NODE_NUM": node_id
                 }
         compose_yaml["services"][name] = instance_conf
+    if "hive-metastore" in data["hosts"]:
+        compose_yaml["services"]["cluster-db"] = {
+            "image": "postgres:13.1",
+            "container_name": "cluster-db",
+            "restart": "always",
+            "environment": {
+                "POSTGRES_PASSWORD": "postgres",
+                "POSTGRES_HOST_AUTH_METHOD": "trust"
+            },
+            "networks": ["hadoop.net"],
+            "ports": ["5432:5432"],
+            "volumns": [
+                "./hive/sql/create_db.sql:/docker-entrypoint-initdb.d/create_hive_db.sql",
+            ]
+        }
+        if "hue" in data["hosts"]:
+            compose_yaml["services"]["cluster-db"]["volumes"].append(
+                "./hue/sql/create_db.sql:/docker-entrypoint-initdb.d/create_hue_db.sql"
+            )
+
     return dump(compose_yaml, Dumper=Dumper)
