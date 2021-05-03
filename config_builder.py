@@ -44,6 +44,11 @@ def _additional_config(args):
             "metastore-db-host": "cluster-db",
             "metastore-db-name": "metastore"
         }
+    if args.hue or args.all:
+        config["hue"] = {
+            "hue-db-host": "cluster-db",
+            "hue-db-name": "hue"
+        }
     return config
 
 

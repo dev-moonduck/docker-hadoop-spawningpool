@@ -1,0 +1,9 @@
+FROM {{additional["image-name"]["hive"]}}
+
+COPY --from=gethue/hue:{{dependencyVersions["hue"]}} /usr/share/hue /usr/share/hue
+COPY --from=gethue/hue:{{dependencyVersions["hue"]}} /usr/bin/python3.6 /usr/bin/python3.6-config /usr/bin/python3.6m /usr/bin/python3.6m-config /usr/bin/
+COPY --from=gethue/hue:{{dependencyVersions["hue"]}} /usr/lib/python3.6 /usr/lib/python3.6
+COPY --from=gethue/hue:{{dependencyVersions["hue"]}} /usr/lib/python3/dist-packages /usr/lib/python3/dist-packages
+
+COPY conf/hue.ini /usr/share/hue/desktop/conf/hue.ini
+COPY scripts/run_hue.sh /scripts/run_hue.sh
