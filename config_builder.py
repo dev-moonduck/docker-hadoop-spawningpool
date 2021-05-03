@@ -98,7 +98,7 @@ def _instances(args):
           "image": "cluster-starter"
         },
         "primary-namenode": {
-            "hosts": ["primary-namenode1", "namenode1", "nameservice1", "journalnode1", "resource-manager",
+            "hosts": ["primary-namenode1", "namenode1", "nameservice", "journalnode1", "resource-manager",
                       "yarn-history", "zookeeper1"],
             "components": ["primary-namenode", "journalnode", "resource-manager", "yarn-history"],
             "image": "hadoop",

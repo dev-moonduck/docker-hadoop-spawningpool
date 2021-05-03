@@ -15,7 +15,7 @@ def _get_file_list(dir_path):
     return files
 
 
-def _copy_template_to_target(relative_path):
+def _copy_files_to_target(relative_path):
     src = os.path.join(TEMPLATE_PATH, relative_path)
     target = os.path.join(BASE_PATH, TARGET_DIR, relative_path)
     Path(target).parent.mkdir(parents=True, exist_ok=True)
@@ -31,7 +31,7 @@ def copy_all_non_templates(base_components):
         src_base_path = Path(TEMPLATE_PATH)
         for non_template in without_templates:
             relative_path = Path(non_template).relative_to(src_base_path)
-            copied = Path(_copy_template_to_target(relative_path))
+            copied = Path(_copy_files_to_target(relative_path))
             if copied.suffix == ".sh" or copied.suffix == ".py":
                 os.chmod(copied, 0o744)
 
@@ -55,6 +55,11 @@ def write_all_templates(base_components, template_engine, data):
             relative_path = Path(template).relative_to(src_base_path)
             rendered = template_engine.render(template, data)
             _write_file(Path(os.path.join(BASE_PATH, TARGET_DIR, os.path.splitext(relative_path)[0])), rendered)
+
+    build_script = "builder.sh.template"
+
+    rendered = template_engine.render(os.path.join(TEMPLATE_PATH, build_script), data)
+    _write_file(Path(os.path.join(BASE_PATH, TARGET_DIR, os.path.splitext(build_script)[0])), rendered)
 
 
 def write_docker_compose(yaml_str):
