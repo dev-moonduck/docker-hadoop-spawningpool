@@ -929,9 +929,9 @@
     #   options='{"url": "mysql://root:secret@database:3306/hue"}'
     #   ## options='{"url": "mysql://${USER}:${PASSWORD}@localhost:3306/hue"}'
 
-    # [[[hive]]]
-    #   name=Hive
-    #   interface=hiveserver2
+    [[[hive]]]
+      name=Hive
+      interface=hiveserver2
 
     # [[[llap]]]
     #   name=LLAP
@@ -1025,9 +1025,9 @@
     #   name=Shell
     #   interface=oozie
 
-    [[[presto]]]
-      name=Presto SQL
-      interface=presto
+    #[[[presto]]]
+    #  name=Presto SQL
+    #  interface=presto
     # ## Specific options for connecting to the Presto server.
     # ## The JDBC driver presto-jdbc.jar need to be in the CLASSPATH environment variable.
     # ## If 'user' and 'password' are omitted, they will be prompted in the UI.
@@ -1319,7 +1319,7 @@
   ## auth_password=
 
   # Use SASL framework to establish connection to host.
-  ## use_sasl=false
+   use_sasl=false
 
   [[ssl]]
     # Path to Certificate Authority certificates.

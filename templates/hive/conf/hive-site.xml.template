@@ -40,4 +40,8 @@
         <name>hive.server2.active.passive.ha.enable</name>
         <value>true</value>
     </property>
+    <property>
+        <name>hive.server2.authentication</name>
+        <value>NOSASL</value>
+    </property>
 </configuration>
