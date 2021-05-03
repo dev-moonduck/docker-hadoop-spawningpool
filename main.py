@@ -30,6 +30,7 @@ def parse_arg():
     parser.add_argument("--hive-version", default="3.1.2", help="Hive version")
     parser.add_argument("--spark-version", default="3.1.1", help="Spark version, if you specified --provided-spark" +
                         "option, it should match with provided spark version")
+    parser.add_argument("--scala-version", default="2.13", help="Scala major version to build spark")
     parser.add_argument("--java-version", default="8", help="Java version, Only 8 or 11 are supported")
     parser.add_argument("--zookeeper-version", default="3.6.2", help="Zookeeper version")
     parser.add_argument("--hue-version", default="4.9.0", help="Docker hue version")
@@ -44,6 +45,8 @@ def run():
     try:
         template_data = config_builder.build_config_from_args(args)
         images_to_build = utils.get_images_to_build(template_data)
+        if args.spark_thrift:
+            images_to_build.add("spark-thrift")
         file_handler.copy_all_non_templates(images_to_build)
         file_handler.write_all_templates(images_to_build, template, template_data)
         file_handler.write_docker_compose(docker_compose.generate_yaml(template_data))

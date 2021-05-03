@@ -86,6 +86,7 @@ def _component_versions(args):
         version["hive"] = args.hive_version
     if args.spark_thrift or args.all:
         version["spark"] = args.spark_version
+        version["scala"] = args.scala_version
     if args.hue or args.all:
         version["hue"] = args.hue_version
     return version
@@ -137,7 +138,7 @@ def _instances(args):
         all_instances["primary-namenode"]["image"] = "hive"
 
     if args.spark_thrift or args.all:
-        all_instances["secondary-namenode"]["hosts"] += ["spark-thrift1", "spark-history"]
+        all_instances["secondary-namenode"]["hosts"] += ["spark-thrift", "spark-history"]
         all_instances["secondary-namenode"]["components"] += ["spark-thrift"]
         all_instances["secondary-namenode"]["ports"] += ["10010:10000", "10011:10001", "10012:10002", "18080:18080"]
         all_instances["secondary-namenode"]["image"] = "hive"

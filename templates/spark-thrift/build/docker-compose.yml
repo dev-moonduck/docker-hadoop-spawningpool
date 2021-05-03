@@ -1,0 +1,9 @@
+version: "3"
+
+services:
+  spark-builder:
+    build:
+      context: .
+    image: spark
+    volumes:
+      - ./target/:/target/
