@@ -41,3 +41,4 @@ case "$1" in
     hue)
       build_hue
       ;;
+esac
