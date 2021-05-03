@@ -20,7 +20,9 @@ DOCKER_COMPOSE_YAML = OrderedDict({
         }
     },
     "networks": {
-        "hadoop.net": None
+        "hadoop.net": {
+            "external": True
+        }
     }
 })
 
