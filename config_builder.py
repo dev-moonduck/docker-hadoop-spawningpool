@@ -72,10 +72,10 @@ def _instances(args):
             "ports": ["9870:9870", "8088:8088"]
         },
         "secondary-namenode": {
-            "hosts": ["secondary-namenode1", "namenode2", "journalnode2", "spark-history", "zookeeper2"],
+            "hosts": ["secondary-namenode1", "namenode2", "journalnode2", "zookeeper2"],
             "components": ["secondary-namenode", "journalnode"],
             "image": "hadoop",
-            "ports": ["9871:9870", "18080:18080"]
+            "ports": ["9871:9870"]
         },
         "datanode1": {
             "hosts": ["datanode1", "journalnode3", "zookeeper3"],
@@ -92,7 +92,7 @@ def _instances(args):
         all_instances["datanode" + i] = {
             "hosts": ["datanode1"],
             "components": ["datanode"],
-            "ports": [(9864 + i - 1) + ":9864"] # 9865, 9866, ...
+            "ports": [(9864 + i - 1) + ":9864"]  # 9865, 9866, ...
         }
 
     if args.hive or args.all:
@@ -102,9 +102,9 @@ def _instances(args):
         all_instances["primary-namenode"]["image"] = "hive"
 
     if args.spark_thrift or args.all:
-        all_instances["secondary-namenode"]["hosts"] += ["spark-thrift1"]
+        all_instances["secondary-namenode"]["hosts"] += ["spark-thrift1", "spark-history"]
         all_instances["secondary-namenode"]["components"] += ["spark-thrift"]
-        all_instances["secondary-namenode"]["ports"] += ["10010:10000", "10011:10001", "10012:10002"]
+        all_instances["secondary-namenode"]["ports"] += ["10010:10000", "10011:10001", "10012:10002", "18080:18080"]
         all_instances["secondary-namenode"]["image"] = "hive"
 
     if args.hue or args.all:
