@@ -53,6 +53,7 @@ COPY ./conf/yarn-site.xml $HADOOP_CONF_DIR/yarn-site.xml
 COPY ./conf/mapred-site.xml $HADOOP_CONF_DIR/mapred-site.xml
 
 RUN mkdir -p /hadoop/dfs/name \
+    && mkdir -p /hadoop/dfs/data \
     && mkdir -p /hadoop/yarn/timeline \
     && mkdir -p /hadoop/dfs/data \
     && mkdir -p /opt/zookeeper/data

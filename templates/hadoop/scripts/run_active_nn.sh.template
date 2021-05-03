@@ -1,6 +1,6 @@
 #!/bin/bash
 
-namedir="file:///hadoop/dfs/name"
+namedir="/hadoop/dfs/name"
 if [ ! -d $namedir ]; then
   echo "Namenode name directory not found: $namedir"
   exit 2
