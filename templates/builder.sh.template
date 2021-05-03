@@ -42,3 +42,7 @@ case "$1" in
       build_hue
       ;;
 esac
+
+# Use external network. It is because of this issue https://github.com/docker/compose/issues/229
+# It creates {dirname}_hadoop.net as network name, which cause network invalid issue when we use hive
+docker network create hadoop.net
