@@ -10,7 +10,15 @@ from collections import OrderedDict
 
 DOCKER_COMPOSE_YAML = OrderedDict({
     "version": "3",
-    "services": {},
+    "services": {
+        "cluster-starter": {
+            "image": "cluster-starter",
+            "container_name": "cluster-starter",
+            "networks": {
+                "hadoop.net": None
+            }
+        }
+    },
     "networks": {
         "hadoop.net": None
     }
@@ -26,15 +34,22 @@ def generate_yaml(data):
     compose_yaml = copy.deepcopy(DOCKER_COMPOSE_YAML)
     for name, instance in data["instances"].items():
         instance_conf = {
-            "image": instance["image"],
+            "image": "local-" + instance["image"],
             "container_name": name,
             "networks": {
                 "hadoop.net": None
-            }
+            },
+            "tty": True
         }
-        if instance["ports"]:
+        if "ports" in instance and instance["ports"]:
             instance_conf["ports"] = instance["ports"]
-        if instance["hosts"]:
-            instance_conf["networks"]["hadoop.net"] = {"aliases": instance["hosts"]}
+        if "hosts" in instance and instance["hosts"]:
+            instance_conf["networks"]["hadoop.net"] = { "aliases": instance["hosts"] }
+            zookeeper = list(filter(lambda h: "zookeeper" in h, instance["hosts"]))
+            if zookeeper:
+                node_id = zookeeper[0][len("zookeeper"):]
+                instance_conf["environment"] = {
+                    "MY_NODE_NUM": node_id
+                }
         compose_yaml["services"][name] = instance_conf
     return dump(compose_yaml, Dumper=Dumper)

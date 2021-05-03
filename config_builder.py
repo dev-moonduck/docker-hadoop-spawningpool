@@ -64,6 +64,9 @@ def _component_versions(args):
 def _instances(args):
     # Required instances
     all_instances = {
+        "cluster-starter": {
+          "image": "cluster-starter"
+        },
         "primary-namenode": {
             "hosts": ["primary-namenode1", "namenode1", "nameservice1", "journalnode1", "resource-manager",
                       "yarn-history", "zookeeper1"],

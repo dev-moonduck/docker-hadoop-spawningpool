@@ -55,3 +55,8 @@ def write_all_templates(base_components, template_engine, data):
             relative_path = Path(template).relative_to(src_base_path)
             rendered = template_engine.render(template, data)
             _write_file(Path(os.path.join(BASE_PATH, TARGET_DIR, os.path.splitext(relative_path)[0])), rendered)
+
+
+def write_docker_compose(yaml_str):
+    print("writing docker-compose.yml")
+    _write_file(Path(os.path.join(BASE_PATH, TARGET_DIR, "docker-compose.yml")), yaml_str)

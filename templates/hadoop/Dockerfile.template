@@ -36,7 +36,8 @@ RUN apt update && DEBIAN_FRONTEND=noninteractive apt install -y --no-install-rec
     && mkdir -p /hadoop-data/ && mkdir -p /prerun && mkdir -p /postrun && mkdir -p /config && mkdir -p /scripts && mkdir -p /env
 
 # Zookeeper
-COPY --from=zookeeper:3.6.2 /apache-zookeeper-3.6.2-bin /opt/zookeeper
+COPY --from=zookeeper:3.6.2 /apache-zookeeper-3.6.2-bin $ZOOKEEPER_HOME
+COPY ./conf/zoo.cfg $ZOOKEEPER_HOME/conf/zoo.cfg
 
 # Define linux user and groups for hadoop users
 RUN {% for name, gid in groups.items() -%}
