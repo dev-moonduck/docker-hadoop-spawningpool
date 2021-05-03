@@ -126,7 +126,7 @@ def _instances(args):
         }
 
     if args.hive or args.all:
-        all_instances["primary-namenode"]["hosts"] += ["hive-server1", "hive-metastore1"]
+        all_instances["primary-namenode"]["hosts"] += ["hive-server", "hive-metastore"]
         all_instances["primary-namenode"]["components"] += ["hive-server", "hive-metastore"]
         all_instances["primary-namenode"]["ports"] += ["10000:10000", "10001:10001", "10002:10002", "9083:9083"]
         all_instances["primary-namenode"]["image"] = "hive"

@@ -7,6 +7,7 @@ USER root
 ENV HIVE_VERSION="{{dependencyVersions["hive"]}}"
 
 ENV HIVE_HOME=/opt/hive
+ENV HIVE_CONF_DIR=$HIVE_HOME/conf
 ENV PATH=$HIVE_HOME/bin:$PATH
 
 WORKDIR /opt
@@ -21,7 +22,7 @@ RUN {% if not binary["hive"] -%}
     {% endif -%}
 	mkdir -p /opt && \
 	cd /tmp && tar -xzvf apache-hive.tar.gz && \
-	mv apache-hive-$HIVE_VERSION-bin /opt && \
+	mv apache-hive-$HIVE_VERSION-bin /opt/hive && \
 	rm apache-hive.tar.gz
 
 COPY jars/postgresql-42.2.18.jar $HIVE_HOME/lib/postgresql-jdbc.jar
@@ -31,3 +32,5 @@ COPY conf/hive-site.xml $HIVE_HOME/conf
 # Hive uses too old guava, it causes error(https://stackoverflow.com/questions/58176627/how-can-i-ask-hive-to-provide-more-detailed-error) when schematool runs
 COPY ./jars/guava-27.0-jre.jar $HIVE_HOME/lib/
 RUN rm -f $HIVE_HOME/lib/guava-19.0.jar
+
+COPY scripts/run_hive_metastore.sh scripts/run_hive_server.sh /scripts/
