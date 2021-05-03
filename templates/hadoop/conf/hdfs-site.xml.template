@@ -42,11 +42,11 @@
   </property>
   <property>
     <name>dfs.namenode.rpc-address.{{clusterName}}.nn2</name>
-    <value>{{hosts["primary-namenode"]}}:9000</value>
+    <value>{{hosts["secondary-namenode"]}}:9000</value>
   </property>
   <property>
     <name>dfs.namenode.http-address.{{clusterName}}.nn2</name>
-    <value>{{hosts["primary-namenode"]}}:9870</value>
+    <value>{{hosts["secondary-namenode"]}}:9870</value>
   </property>
   <property>
     <name>dfs.namenode.shared.edits.dir</name>
