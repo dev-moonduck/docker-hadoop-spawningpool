@@ -5,6 +5,7 @@ import file_handler
 import traceback
 import utils
 import template
+import docker_compose
 
 BASE_PATH = Path(__file__).parent.absolute()
 
@@ -40,6 +41,7 @@ def run():
         images_to_build = utils.get_images_to_build(template_data)
         file_handler.copy_all_non_templates(images_to_build)
         file_handler.write_all_templates(images_to_build, template, template_data)
+        print(docker_compose.generate_yaml(template_data))
     except:
         traceback.print_exception()
         print("Template data: {}".format(template_data))
