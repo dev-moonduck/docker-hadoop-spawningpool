@@ -45,4 +45,4 @@ esac
 
 # Use external network. It is because of this issue https://github.com/docker/compose/issues/229
 # It creates {dirname}_hadoop.net as network name, which cause network invalid issue when we use hive
-docker network create hadoop.net
+docker network create hadoop.net || echo "network already exists"
