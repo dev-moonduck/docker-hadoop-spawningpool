@@ -42,7 +42,7 @@ def run():
         file_handler.copy_all_non_templates(images_to_build)
         file_handler.write_all_templates(images_to_build, template, template_data)
         file_handler.write_docker_compose(docker_compose.generate_yaml(template_data))
-    except:
+    except Exception as e:
         traceback.print_exception()
         print("Template data: {}".format(template_data))
         exit(-1)

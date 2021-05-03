@@ -39,8 +39,8 @@ def _component_hosts(args):
         "yarn-history": "yarn-history",
         "resource-manager": "resource-manager"
     }
-    for i in range(2, args.num_datanode):
-        hosts["datanode"] += ("datanode" + i)
+    for i in range(2, args.num_datanode + 1):
+        hosts["datanode"].append("datanode" + str(i))
     if args.hive or args.all:
         hosts["hive-server"] = "hive-server"
         hosts["hive-metastore"] = "hive-metastore"
@@ -96,10 +96,12 @@ def _instances(args):
     # Add more datanode
     num_datanode = args.num_datanode
     for i in range(2, num_datanode + 1):
-        all_instances["datanode" + i] = {
-            "hosts": ["datanode1"],
+        external_port = 9864 + i - 1
+        all_instances["datanode" + str(i)] = {
+            "hosts": ["datanode" + str(i)],
             "components": ["datanode"],
-            "ports": [(9864 + i - 1) + ":9864"]  # 9865, 9866, ...
+            "image": "hadoop",
+            "ports": [str(external_port) + ":9864"]  # 9865, 9866, ...
         }
 
     if args.hive or args.all:
