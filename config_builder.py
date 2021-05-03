@@ -19,6 +19,7 @@ PREDEF_USERS = {
 
 def build_config_from_args(args):
     return {
+        "clusterName": "nameservice",
         "dependencyVersions": _component_versions(args),
         "instances": _instances(args),
         "binary": _provided_bins(args),
@@ -34,7 +35,9 @@ def _component_hosts(args):
         "secondary-namenode": "secondary-namenode1",
         "datanode": ["datanode1"],
         "journalnode": ["journalnode1", "journalnode2", "journalnode3"],
-        "zookeeper": ["zookeeper1", "zookeeper2", "zookeeper3"]
+        "zookeeper": ["zookeeper1", "zookeeper2", "zookeeper3"],
+        "yarn-history": "yarn-history",
+        "resource-manager": "resource-manager"
     }
     for i in range(2, args.num_datanode):
         hosts["datanode"] += ("datanode" + i)
@@ -43,6 +46,7 @@ def _component_hosts(args):
         hosts["hive-metastore"] = "hive-metastore"
     if args.spark_thrift or args.all:
         hosts["spark-thrift"] = "spark-thrift"
+        hosts["spark-history"] = "spark-history"
     return hosts
 
 

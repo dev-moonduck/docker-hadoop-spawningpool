@@ -47,6 +47,10 @@ RUN {% for name, gid in groups.items() -%}
 {% endfor -%}
 
 COPY scripts/ /scripts/
+COPY ./conf/core-site.xml $HADOOP_CONF_DIR/core-site.xml
+COPY ./conf/hdfs-site.xml $HADOOP_CONF_DIR/hdfs-site.xml
+COPY ./conf/yarn-site.xml $HADOOP_CONF_DIR/yarn-site.xml
+COPY ./conf/mapred-site.xml $HADOOP_CONF_DIR/mapred-site.xml
 
 RUN /scripts/add_proxy_users.sh \
     && mkdir -p /hadoop/dfs/name \

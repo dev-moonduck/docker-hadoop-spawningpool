@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<configuration>
+  <property>
+    <name>fs.defaultFS</name>
+    <value>hdfs://{{clusterName}}</value>
+  </property>
+  <property>
+    <name>hadoop.http.staticuser.user</name>
+    <value>dr.who</value>
+  </property>
+  <property>
+    <name>io.compression.codecs</name>
+    <value>org.apache.hadoop.io.compress.SnappyCodec</value>
+  </property>
+  <property>
+    <name>ha.zookeeper.quorum</name>
+    <value>{{ hosts["zookeeper"] | join(":2181,")}}:2181</value>
+  </property>
+</configuration>
