@@ -34,7 +34,7 @@ def generate_yaml(data):
     compose_yaml = copy.deepcopy(DOCKER_COMPOSE_YAML)
     for name, instance in data["instances"].items():
         instance_conf = {
-            "image": "local-" + instance["image"],
+            "image": data["additional"]["image-name"][instance["image"]],
             "container_name": name,
             "networks": {
                 "hadoop.net": None
@@ -63,7 +63,7 @@ def generate_yaml(data):
             },
             "networks": ["hadoop.net"],
             "ports": ["5432:5432"],
-            "volumns": [
+            "volumes": [
                 "./hive/sql/create_db.sql:/docker-entrypoint-initdb.d/create_hive_db.sql",
             ]
         }

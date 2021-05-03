@@ -31,7 +31,14 @@ def build_config_from_args(args):
 
 
 def _additional_config(args):
-    config = {}
+    config = {
+        "image-name": {
+            "hadoop": args.image_name_hadoop,
+            "hive": args.image_name_hive,
+            "hue": args.image_name_hue,
+            "cluster-starter": "cluster-starter"
+        }
+    }
     if args.hive or args.all:
         config["hive"] = {
             "metastore-db-host": "cluster-db",
@@ -60,7 +67,7 @@ def _component_hosts(args):
         hosts["spark-history"] = "spark-history"
     if args.hue or args.all:
         hosts["hue"] = "hue"
-        
+
     return hosts
 
 
@@ -68,10 +75,10 @@ def _component_versions(args):
     version = {
         "java": args.java_version,
         "hadoop": args.hadoop_version,
-        "zookeeper": args.zookeeper_version
+        "zookeeper": args.zookeeper_version,
     }
     if args.hive or args.all:
-        version["hive"] = args.hive
+        version["hive"] = args.hive_version
     if args.spark_thrift or args.all:
         version["spark"] = args.spark_version
     if args.hue or args.all:
@@ -146,4 +153,7 @@ def _provided_bins(args):
     spark_bin_path = args.provided_spark
     if spark_bin_path:
         paths["spark"] = spark_bin_path
+    hive_bin_path = args.provided_hive
+    if hive_bin_path:
+        paths["hive"] = hive_bin_path
     return paths
