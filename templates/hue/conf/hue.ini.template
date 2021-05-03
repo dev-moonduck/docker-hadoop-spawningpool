@@ -1219,10 +1219,10 @@
   hive_server_host={{hosts["hive-server"]}}
 
   # Binary thrift port for HiveServer2.
-  ## hive_server_port=10000
+  hive_server_port=10000
 
   # Http thrift port for HiveServer2.
-  ## hive_server_http_port=10001
+  hive_server_http_port=10001
 
   # Host where LLAP is running
   ## llap_server_host = localhost

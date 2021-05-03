@@ -18,14 +18,14 @@
     </property>
     <property>
         <name>datanucleus.autoCreateSchema</name>
-        <value>false</value>
+        <value>true</value>
     </property>
     <property>
         <name>hive.metastore.uris</name>
         <value>thrift://{{hosts["hive-metastore"]}}:9083</value>
     </property>
     <property>
-        <name>hive_server2_thrift_port</name>
+        <name>hive.server2.thrift.port</name>
         <value>10000</value>
     </property>
     <property>
