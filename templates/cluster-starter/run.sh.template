@@ -139,7 +139,7 @@ echo "All datanode/nodemanager have been up!"
 
 # Run Resourcemanager
 RM_PORT=8088
-RM_ADDR=""{{ hosts["resource-manager"] }}""
+RM_ADDR="{{ hosts["resource-manager"] }}"
 echo "Trying to run resourcemanager..."
 agent_addr="$RM_ADDR:$AGENT_PORT"
 wait_agent $agent_addr
