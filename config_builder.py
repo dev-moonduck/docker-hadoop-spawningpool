@@ -1,3 +1,5 @@
+from copy import deepcopy
+
 PREDEF_GROUPS = {
   "admin": 150, "hadoop": 151, "hadoopsvc": 152, "usersvc": 154, "dataplatform_user": 155
 }
@@ -14,6 +16,39 @@ PREDEF_USERS = {
   "ml_svc": { "uid": 188, "groups": ["usersvc"], "isSvc": True },
   "de_user": { "uid": 189, "groups": ["dataplatform_user"], "isSvc": False },
   "de_svc": { "uid": 190, "groups": ["usersvc"], "isSvc": True }
+}
+
+MINIMUM_INSTANCES = {
+    "cluster-starter": {
+      "image": "cluster-starter"
+    },
+    "primary-namenode": {
+        "hosts": ["primary-namenode", "namenode1", "journalnode1", "resource-manager", "yarn-history", "zookeeper1"],
+        "components": ["primary-namenode", "journalnode", "resource-manager", "yarn-history"],
+        "image": "hadoop",
+        "ports": ["9870:9870", "8088:8088"],
+        "volumnes": []
+    },
+    "secondary-namenode": {
+        "hosts": ["secondary-namenode", "namenode2", "journalnode2", "zookeeper2"],
+        "components": ["secondary-namenode", "journalnode"],
+        "image": "hadoop",
+        "ports": ["9871:9870"],
+        "volumnes": []
+    },
+    "datanode1": {
+        "hosts": ["datanode1", "journalnode3", "zookeeper3"],
+        "components": ["datanode", "journalnode"],
+        "image": "hadoop",
+        "ports": ["9864:9864"],
+        "volumnes": []
+    }
+}
+
+INSTANCE_MAPPING = {
+    "hive": "primary-namenode",
+    "spark": "secondary-namenode",
+    "hue": "secondary-namenode"
 }
 
 
@@ -54,8 +89,8 @@ def _additional_config(args):
 
 def _component_hosts(args):
     hosts = {
-        "primary-namenode": "primary-namenode1",
-        "secondary-namenode": "secondary-namenode1",
+        "primary-namenode": "primary-namenode",
+        "secondary-namenode": "secondary-namenode",
         "datanode": ["datanode1"],
         "journalnode": ["journalnode1", "journalnode2", "journalnode3"],
         "zookeeper": ["zookeeper1", "zookeeper2", "zookeeper3"],
@@ -69,6 +104,7 @@ def _component_hosts(args):
         hosts["hive-metastore"] = "hive-metastore"
     if args.spark_thrift or args.all:
         hosts["spark-thrift"] = "spark-thrift"
+    if args.spark or args.all:
         hosts["spark-history"] = "spark-history"
     if args.hue or args.all:
         hosts["hue"] = "hue"
@@ -84,9 +120,6 @@ def _component_versions(args):
     }
     if args.hive or args.all:
         version["hive"] = args.hive_version
-    if args.spark_thrift or args.all:
-        version["spark"] = args.spark_version
-        version["scala"] = args.scala_version
     if args.hue or args.all:
         version["hue"] = args.hue_version
     return version
@@ -94,30 +127,7 @@ def _component_versions(args):
 
 def _instances(args):
     # Required instances
-    all_instances = {
-        "cluster-starter": {
-          "image": "cluster-starter"
-        },
-        "primary-namenode": {
-            "hosts": ["primary-namenode1", "namenode1", "nameservice", "journalnode1", "resource-manager",
-                      "yarn-history", "zookeeper1"],
-            "components": ["primary-namenode", "journalnode", "resource-manager", "yarn-history"],
-            "image": "hadoop",
-            "ports": ["9870:9870", "8088:8088"]
-        },
-        "secondary-namenode": {
-            "hosts": ["secondary-namenode1", "namenode2", "journalnode2", "zookeeper2"],
-            "components": ["secondary-namenode", "journalnode"],
-            "image": "hadoop",
-            "ports": ["9871:9870"]
-        },
-        "datanode1": {
-            "hosts": ["datanode1", "journalnode3", "zookeeper3"],
-            "components": ["datanode", "journalnode"],
-            "image": "hadoop",
-            "ports": ["9864:9864"]
-        }
-    }
+    all_instances = deepcopy(MINIMUM_INSTANCES)
 
     # Set optional instances
     # Add more datanode
@@ -131,22 +141,32 @@ def _instances(args):
             "ports": [str(external_port) + ":9864"]  # 9865, 9866, ...
         }
 
+    # Local resource is limited... hence we run multiple components in an instance
+    # Namenode instances should not be busy at all, hence places all additional instances at namenodes
     if args.hive or args.all:
-        all_instances["primary-namenode"]["hosts"] += ["hive-server", "hive-metastore"]
-        all_instances["primary-namenode"]["components"] += ["hive-server", "hive-metastore"]
-        all_instances["primary-namenode"]["ports"] += ["10000:10000", "10001:10001", "10002:10002", "9083:9083"]
-        all_instances["primary-namenode"]["image"] = "hive"
+        instance_to_run = INSTANCE_MAPPING["hive"]
+        all_instances[instance_to_run]["hosts"] += ["hive-server", "hive-metastore"]
+        all_instances[instance_to_run]["components"] += ["hive-server", "hive-metastore"]
+        all_instances[instance_to_run]["ports"] += ["10000:10000", "10001:10001", "10002:10002", "9083:9083"]
+        all_instances[instance_to_run]["image"] = "hive"
 
     if args.spark_thrift or args.all:
-        all_instances["secondary-namenode"]["hosts"] += ["spark-thrift", "spark-history"]
-        all_instances["secondary-namenode"]["components"] += ["spark-thrift"]
-        all_instances["secondary-namenode"]["ports"] += ["10010:10000", "10011:10001", "10012:10002", "18080:18080"]
-        all_instances["secondary-namenode"]["image"] = "hive"
+        instance_to_run = INSTANCE_MAPPING["spark"]
+        all_instances[instance_to_run]["hosts"] += ["spark-thrift"]
+        all_instances[instance_to_run]["components"] += ["spark-thrift"]
+        all_instances[instance_to_run]["ports"] += ["10010:10000", "10011:10001", "10012:10002"]
+
+    if args.spark or args.all:
+        instance_to_run = INSTANCE_MAPPING["spark"]
+        all_instances[instance_to_run]["hosts"] += ["spark-history"]
+        all_instances[instance_to_run]["components"] += ["spark-history"]
+        all_instances[instance_to_run]["ports"] += ["18080:18080"]
 
     if args.hue or args.all:
-        all_instances["secondary-namenode"]["hosts"] += ["hue"]
-        all_instances["secondary-namenode"]["image"] = "hue"
-        all_instances["secondary-namenode"]["ports"] += ["8888:8888"]
+        instance_to_run = INSTANCE_MAPPING["hue"]
+        all_instances[instance_to_run]["hosts"] += ["hue"]
+        all_instances[instance_to_run]["image"] = "hue"
+        all_instances[instance_to_run]["ports"] += ["8888:8888"]
 
     return all_instances
 
