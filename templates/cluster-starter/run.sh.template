@@ -32,7 +32,7 @@ function wait_for_it()
     echo "[$i/$max_try] $service:${port} is available."
 }
 
-AGENT_PORT=3333
+AGENT_PORT={{additional["agent"]["port"]}}
 
 function run_remote_script()
 {
@@ -75,9 +75,9 @@ function wait_files_in_hdfs()
 # Run Journal and Zookeeper Node
 echo "Trying to run Journal and Zookeeper nodes..."
 JOURNAL_RUN_SCRIPT="/scripts/run_journal.sh"
-JOURNAL_PORT=8485
+JOURNAL_PORT={{additional["journalnode"]["port"]}}
 ZOOKEEPER_RUN_SCRIPT="/scripts/run_zookeeper.sh"
-ZOOKEEPER_PORT=2181
+ZOOKEEPER_PORT={{additional["zookeeper"]["port"]}}
 JOURNAL_NODES=("{{ hosts["journalnode"] | join("\" \"") }}")
 ZOOKEEPER_NODES=("{{ hosts["zookeeper"] | join("\" \"") }}")
 
@@ -102,7 +102,7 @@ done
 echo "All journal and zookeeper have been up!"
 
 # Run Namenodes
-NAMENODE_PORT=9000
+NAMENODE_PORT={{additional["namenode"]["port"]}}
 # Run Active Namenode
 echo "Trying to run namenode(active)..."
 ACTIVE_NAMENODE="{{hosts["primary-namenode"]}}"
@@ -121,8 +121,8 @@ wait_for_it "$STANDBY_NAMENODE:$NAMENODE_PORT"
 echo "All namenode have been up!"
 
 # Run Datanodes and node manager
-DATANODE_PORT=9864
-NODEMANAGER_PORT=8042
+DATANODE_PORT={{additional["datanode"]["port"]}}
+NODEMANAGER_PORT={{additional["datanode"]["nodemanager-port"]}}
 echo "Trying to run datanode/nodemanager..."
 DATA_NODES=("{{ hosts["datanode"] | join("\" \"")}}")
 for node in "${DATA_NODES[@]}"; do
@@ -138,7 +138,7 @@ done
 echo "All datanode/nodemanager have been up!"
 
 # Run Resourcemanager
-RM_PORT=8088
+RM_PORT={{additional["resource-manager"]["port"]}}
 RM_ADDR="{{ hosts["resource-manager"] }}"
 echo "Trying to run resourcemanager..."
 agent_addr="$RM_ADDR:$AGENT_PORT"
@@ -154,7 +154,7 @@ echo "Resource manager has been up!"
 
 # Run Yarn HistoryServer
 YARN_HS_ADDR="{{hosts["yarn-history"]}}"
-YARN_HS_PORT=8188
+YARN_HS_PORT={{additional["yarn-history-server"]["port"]}}
 echo "Trying to run yarn historyserver..."
 agent_addr="$YARN_HS_ADDR:$AGENT_PORT"
 wait_agent $agent_addr
@@ -165,9 +165,9 @@ echo "Yarn history server has been up!"
 
 {% if hosts["hive-metastore"] %}
 # Run Hive metastore
-wait_for_it "{{additional["hive"]["metastore-db-host"]}}:5432" # Wait until metastore db up
+wait_for_it "{{additional["hive"]["metastore-db-host"]}}:{{additional["hive"]["metastore-db-port"]}}" # Wait until metastore db up
 HMS_HOST="{{hosts["hive-metastore"]}}"
-HMS_PORT=9083
+HMS_PORT={{additional["hive"]["metastore-port"]}}
 echo "Trying to run hive-metastore..."
 agent_addr="$HMS_HOST:$AGENT_PORT"
 wait_agent $agent_addr
@@ -177,7 +177,7 @@ echo "Hive metastore has been up!"
 
 # Run hive server
 HIVE_SERVER_ADDR="{{hosts["hive-server"]}}"
-HIVE_SERVER_PORT=10000
+HIVE_SERVER_PORT={{additional["hive"]["hive-server-port"]}}
 echo "Trying to run hive server..."
 agent_addr="$HIVE_SERVER_ADDR:$AGENT_PORT"
 wait_agent $agent_addr

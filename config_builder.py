@@ -72,16 +72,42 @@ def _additional_config(args):
             "hive": args.image_name_hive,
             "hue": args.image_name_hue,
             "cluster-starter": "cluster-starter"
+        },
+        "yarn-history-server": {
+            "port": "8188"
+        },
+        "resource-manager": {
+            "port": "8088"
+        },
+        "datanode": {
+            "port": "9864",
+            "nodemanager-port": "8042"
+        },
+        "namenode": {
+            "port": "9000"
+        },
+        "journalnode": {
+            "port": "8485"
+        },
+        "zookeeper": {
+            "port": "2181"
+        },
+        "agent": {
+            "port": "3333"
         }
     }
     if args.hive or args.all:
         config["hive"] = {
+            "hive-server-port": "10000",
+            "metastore-port": "9083",
             "metastore-db-host": "cluster-db",
+            "metastore-db-port": "5432",
             "metastore-db-name": "metastore"
         }
     if args.hue or args.all:
         config["hue"] = {
             "hue-db-host": "cluster-db",
+            "hue-db-port": "5432",
             "hue-db-name": "hue"
         }
     return config
