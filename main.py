@@ -14,26 +14,34 @@ def parse_arg():
     # Todo: Target clean up option
     parser = argparse.ArgumentParser(description="Docker hadoop compose yaml generator")
     parser.add_argument("--num-datanode", default=1, type=int, help="number of datanode. Default 3")
+
+    # Enable/disable components
     parser.add_argument("--hive", action='store_true', help="build hive server, metastore")
-    parser.add_argument("--spark-thrift", action='store_true', help="build spark thrift server for adhoc query")
+    parser.add_argument("--spark", action='store_true', help="download spark and run spark history server")
+    parser.add_argument("--spark-thrift", action='store_true', help="download spark and run spark thrift server")
     parser.add_argument("--hue", action='store_true', help="build hue")
     parser.add_argument("--all", action='store_true', help="Equivalent to --hive --spark --spark-thrift --hue")
+
+    # Provided tar/jar path
     parser.add_argument("--provided-hadoop", help="If you already have hadoop tar, provide local path(must be relative "
                                                   + "path) with this option")
     parser.add_argument("--provided-hive", help="If you already have hive tar, provide local path(must be relative "
                                                 + "path) with this option")
     parser.add_argument("--provided-spark", help="If you already have spark tar, provide local path(must be relative "
                                                  + "path with this option")
+
+    # Dependency version configs
     parser.add_argument("--hadoop-version", default="3.3.0",
                         help="Hadoop version, if you specified --provided-hadoop option, it should match "
                              + "with provided hadoop version")
     parser.add_argument("--hive-version", default="3.1.2", help="Hive version")
     parser.add_argument("--spark-version", default="3.1.1", help="Spark version, if you specified --provided-spark" +
                         "option, it should match with provided spark version")
-    parser.add_argument("--scala-version", default="2.13", help="Scala major version to build spark")
     parser.add_argument("--java-version", default="8", help="Java version, Only 8 or 11 are supported")
     parser.add_argument("--zookeeper-version", default="3.6.2", help="Zookeeper version")
     parser.add_argument("--hue-version", default="4.9.0", help="Docker hue version")
+
+    # Docker image name
     parser.add_argument("--image-name-hadoop", default="local-hadoop", help="hadoop docker image name")
     parser.add_argument("--image-name-hive", default="local-hive", help="hive docker image name")
     parser.add_argument("--image-name-hue", default="local-hue", help="hue docker image name")
