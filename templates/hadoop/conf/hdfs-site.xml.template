@@ -34,23 +34,23 @@
   </property>
   <property>
     <name>dfs.namenode.rpc-address.{{clusterName}}.nn1</name>
-    <value>{{hosts["primary-namenode"]}}:9000</value>
+    <value>{{hosts["primary-namenode"]["host"]}}:{{hosts["primary-namenode"]["rpc-port"]}}</value>
   </property>
   <property>
     <name>dfs.namenode.http-address.{{clusterName}}.nn1</name>
-    <value>{{hosts["primary-namenode"]}}:9870</value>
+    <value>{{hosts["primary-namenode"]["host"]}}:{{hosts["primary-namenode"]["http-port"]}}</value>
   </property>
   <property>
     <name>dfs.namenode.rpc-address.{{clusterName}}.nn2</name>
-    <value>{{hosts["secondary-namenode"]}}:9000</value>
+    <value>{{hosts["secondary-namenode"]["host"]}}:{{hosts["secondary-namenode"]["rpc-port"]}}</value>
   </property>
   <property>
     <name>dfs.namenode.http-address.{{clusterName}}.nn2</name>
-    <value>{{hosts["secondary-namenode"]}}:9870</value>
+    <value>{{hosts["secondary-namenode"]["host"]}}:{{hosts["secondary-namenode"]["http-port"]}}</value>
   </property>
   <property>
     <name>dfs.namenode.shared.edits.dir</name>
-    <value>qjournal://{{ hosts["journalnode"] | join(":8485;")}}:8485/{{clusterName}}</value>
+    <value>qjournal://{{ hosts["journalnode"]["host"] | join(":" + hosts["journalnode"]["port"] + ";")}}:{{hosts["journalnode"]["port"]}}/{{clusterName}}</value>
   </property>
   <property>
     <name>dfs.client.failover.proxy.provider.{{clusterName}}</name>

@@ -75,11 +75,11 @@ function wait_files_in_hdfs()
 # Run Journal and Zookeeper Node
 echo "Trying to run Journal and Zookeeper nodes..."
 JOURNAL_RUN_SCRIPT="/scripts/run_journal.sh"
-JOURNAL_PORT={{additional["journalnode"]["port"]}}
+JOURNAL_PORT={{hosts["journalnode"]["port"]}}
 ZOOKEEPER_RUN_SCRIPT="/scripts/run_zookeeper.sh"
-ZOOKEEPER_PORT={{additional["zookeeper"]["port"]}}
-JOURNAL_NODES=("{{ hosts["journalnode"] | join("\" \"") }}")
-ZOOKEEPER_NODES=("{{ hosts["zookeeper"] | join("\" \"") }}")
+ZOOKEEPER_PORT={{hosts["zookeeper"]["port"]}}
+JOURNAL_NODES=("{{ hosts["journalnode"]["host"] | join("\" \"") }}")
+ZOOKEEPER_NODES=("{{ hosts["zookeeper"]["host"] | join("\" \"") }}")
 
 for node in "${JOURNAL_NODES[@]}"; do
     agent_addr="$node:$AGENT_PORT"
@@ -102,11 +102,11 @@ done
 echo "All journal and zookeeper have been up!"
 
 # Run Namenodes
-NAMENODE_PORT={{additional["namenode"]["port"]}}
+NAMENODE_PORT={{hosts["primary-namenode"]["port"]}}
 # Run Active Namenode
 echo "Trying to run namenode(active)..."
-ACTIVE_NAMENODE="{{hosts["primary-namenode"]}}"
-STANDBY_NAMENODE="{{hosts["secondary-namenode"]}}"
+ACTIVE_NAMENODE="{{hosts["primary-namenode"]["host"]}}"
+STANDBY_NAMENODE="{{hosts["secondary-namenode"]["host"]}}"
 nn1_agent_addr="$ACTIVE_NAMENODE:$AGENT_PORT"
 wait_agent $nn1_agent_addr
 run_remote_script $nn1_agent_addr "/scripts/run_active_nn.sh"
@@ -121,10 +121,10 @@ wait_for_it "$STANDBY_NAMENODE:$NAMENODE_PORT"
 echo "All namenode have been up!"
 
 # Run Datanodes and node manager
-DATANODE_PORT={{additional["datanode"]["port"]}}
-NODEMANAGER_PORT={{additional["datanode"]["nodemanager-port"]}}
+DATANODE_PORT={{hosts["datanode"]["port"]}}
+NODEMANAGER_PORT={{hosts["datanode"]["nodemanager-port"]}}
 echo "Trying to run datanode/nodemanager..."
-DATA_NODES=("{{ hosts["datanode"] | join("\" \"")}}")
+DATA_NODES=("{{ hosts["datanode"]["host"] | join("\" \"")}}")
 for node in "${DATA_NODES[@]}"; do
     agent_addr="$node:$AGENT_PORT"
     wait_agent $agent_addr
@@ -138,8 +138,8 @@ done
 echo "All datanode/nodemanager have been up!"
 
 # Run Resourcemanager
-RM_PORT={{additional["resource-manager"]["port"]}}
-RM_ADDR="{{ hosts["resource-manager"] }}"
+RM_PORT={{hosts["resource-manager"]["port"]}}
+RM_ADDR="{{ hosts["resource-manager"]["host"] }}"
 echo "Trying to run resourcemanager..."
 agent_addr="$RM_ADDR:$AGENT_PORT"
 wait_agent $agent_addr
@@ -153,8 +153,8 @@ wait_for_it "$RM_ADDR:$RM_PORT"
 echo "Resource manager has been up!"
 
 # Run Yarn HistoryServer
-YARN_HS_ADDR="{{hosts["yarn-history"]}}"
-YARN_HS_PORT={{additional["yarn-history-server"]["port"]}}
+YARN_HS_ADDR="{{hosts["yarn-history"]["host"]}}"
+YARN_HS_PORT={{hosts["yarn-history"]["port"]}}
 echo "Trying to run yarn historyserver..."
 agent_addr="$YARN_HS_ADDR:$AGENT_PORT"
 wait_agent $agent_addr
@@ -165,9 +165,9 @@ echo "Yarn history server has been up!"
 
 {% if hosts["hive-metastore"] %}
 # Run Hive metastore
-wait_for_it "{{additional["hive"]["metastore-db-host"]}}:{{additional["hive"]["metastore-db-port"]}}" # Wait until metastore db up
-HMS_HOST="{{hosts["hive-metastore"]}}"
-HMS_PORT={{additional["hive"]["metastore-port"]}}
+wait_for_it "{{hosts["hive-metastore"]["metastore-db-host"]}}:{{hosts["hive-metastore"]["metastore-db-port"]}}" # Wait until metastore db up
+HMS_HOST="{{hosts["hive-metastore"]["host"]}}"
+HMS_PORT={{hosts["hive-metastore"]["thrift-port"]}}
 echo "Trying to run hive-metastore..."
 agent_addr="$HMS_HOST:$AGENT_PORT"
 wait_agent $agent_addr
@@ -176,8 +176,8 @@ wait_for_it "$HMS_HOST:$HMS_PORT"
 echo "Hive metastore has been up!"
 
 # Run hive server
-HIVE_SERVER_ADDR="{{hosts["hive-server"]}}"
-HIVE_SERVER_PORT={{additional["hive"]["hive-server-port"]}}
+HIVE_SERVER_ADDR="{{hosts["hive-server"]["host"]}}"
+HIVE_SERVER_PORT={{hosts["hive-server"]["thrift-port"]}}
 echo "Trying to run hive server..."
 agent_addr="$HIVE_SERVER_ADDR:$AGENT_PORT"
 wait_agent $agent_addr
@@ -217,8 +217,8 @@ echo "Hive server has been up!"
 # echo "Spark thrift server has been up!"
 
 # Run Hue
-HUE_ADDR="{{hosts["hue"]}}"
-HUE_PORT=8888
+HUE_ADDR="{{hosts["hue"]["host"]}}"
+HUE_PORT={{hosts["hue"]["port"]}}
 echo "Running hue..."
 agent_addr="$HUE_ADDR:$AGENT_PORT"
 wait_agent $agent_addr

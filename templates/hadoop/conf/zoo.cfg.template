@@ -1,8 +1,8 @@
 tickTime=2000
 dataDir=/opt/zookeeper/data
-clientPort=2181
+clientPort={{hosts["zookeeper"]["port"]}}
 initLimit=5
 syncLimit=2
-{% for node in hosts["zookeeper"] -%}
+{% for node in hosts["zookeeper"]["host"] -%}
 server.{{loop.index}}={{node}}:2888:3888
 {% endfor -%}

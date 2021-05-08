@@ -73,35 +73,12 @@ def _additional_config(args):
             "hue": args.image_name_hue,
             "cluster-starter": "cluster-starter"
         },
-        "yarn-history-server": {
-            "port": "8188"
-        },
-        "resource-manager": {
-            "port": "8088"
-        },
-        "datanode": {
-            "port": "9864",
-            "nodemanager-port": "8042"
-        },
-        "namenode": {
-            "port": "9000"
-        },
-        "journalnode": {
-            "port": "8485"
-        },
-        "zookeeper": {
-            "port": "2181"
-        },
         "agent": {
             "port": "3333"
         }
     }
     if args.hive or args.all:
-        config["hive"] = {
-            "hive-server-port": "10000",
-            "metastore-port": "9083",
-            "metastore-db-host": "cluster-db",
-            "metastore-db-port": "5432",
+        config["hive-metastore"] = {
             "metastore-db-name": "metastore"
         }
     if args.hue or args.all:
@@ -115,25 +92,34 @@ def _additional_config(args):
 
 def _component_hosts(args):
     hosts = {
-        "primary-namenode": "primary-namenode",
-        "secondary-namenode": "secondary-namenode",
-        "datanode": ["datanode1"],
-        "journalnode": ["journalnode1", "journalnode2", "journalnode3"],
-        "zookeeper": ["zookeeper1", "zookeeper2", "zookeeper3"],
-        "yarn-history": "yarn-history",
-        "resource-manager": "resource-manager"
+        "primary-namenode": {
+            "host": "primary-namenode", "rpc-port": "9000", "http-port": "9870"
+        },
+        "secondary-namenode": {
+            "host": "secondary-namenode", "rpc-port": "9000", "http-port": "9870"
+        },
+        "datanode": {
+            "host": ["datanode1"], "port": "9084", "nodemanager-port": "8042"
+        },
+        "journalnode": {"host": ["journalnode1", "journalnode2", "journalnode3"], "port": "8485"},
+        "zookeeper": {"host": ["zookeeper1", "zookeeper2", "zookeeper3"], "port": "2181"},
+        "yarn-history": {"host": "yarn-history", "port": "8188"},
+        "resource-manager": {
+            "host": "resource-manager", "port": "8088", "resource-tracker-port": "8031", "scheduler-port": "8030"
+        }
     }
     for i in range(2, args.num_datanode + 1):
-        hosts["datanode"].append("datanode" + str(i))
+        hosts["datanode"]["host"].append("datanode" + str(i))
     if args.hive or args.all:
-        hosts["hive-server"] = "hive-server"
-        hosts["hive-metastore"] = "hive-metastore"
+        hosts["hive-server"] = {"host": "hive-server", "thrift-port": "10000", "http-port": "10001"}
+        hosts["hive-metastore"] = {"host": "hive-metastore", "thrift-port": "9083", "metastore-db-host": "cluster-db",
+                                   "metastore-db-port": "5432"}
     if args.spark_thrift or args.all:
-        hosts["spark-thrift"] = "spark-thrift"
+        hosts["spark-thrift"] = {"host": "spark-thrift"}
     if args.spark or args.all:
-        hosts["spark-history"] = "spark-history"
+        hosts["spark-history"] = {"host": "spark-history"}
     if args.hue or args.all:
-        hosts["hue"] = "hue"
+        hosts["hue"] = {"host": "hue"}
 
     return hosts
 

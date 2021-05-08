@@ -6,7 +6,7 @@
   </property>
   <property>
     <name>yarn.log.server.url</name>
-    <value>http://{{hosts["yarn-history"]}}:8188/applicationhistory/logs/</value>
+    <value>http://{{hosts["yarn-history"]["host"]}}:{{hosts["yarn-history"]["port"]}}/applicationhistory/logs/</value>
   </property>
   <property>
     <name>yarn.resourcemanager.recovery.enabled</name>
@@ -30,19 +30,19 @@
   </property>
   <property>
     <name>yarn.resourcemanager.hostname</name>
-    <value>{{hosts["resource-manager"]}}</value>
+    <value>{{hosts["resource-manager"]["host"]}}</value>
   </property>
   <property>
     <name>yarn.resourcemanager.address</name>
-    <value>{{hosts["resource-manager"]}}:8032</value>
+    <value>{{hosts["resource-manager"]["host"]}}:{{hosts["resource-manager"]["port"]}}</value>
   </property>
   <property>
     <name>yarn.resourcemanager.scheduler.address</name>
-    <value>{{hosts["resource-manager"]}}:8030</value>
+    <value>{{hosts["resource-manager"]["host"]}}:{{hosts["resource-manager"]["scheduler-port"]}}</value>
   </property>
   <property>
     <name>yarn.resourcemanager.resource-tracker.address</name>
-    <value>{{hosts["resource-manager"]}}:8031</value>
+    <value>{{hosts["resource-manager"]["host"]}}:{{hosts["resource-manager"]["resource-tracker-port"]}}</value>
   </property>
   <property>
     <name>yarn.timeline-service.enabled</name>
@@ -54,7 +54,7 @@
   </property>
   <property>
     <name>yarn.timeline-service.hostname</name>
-    <value>{{hosts["yarn-history"]}}</value>
+    <value>{{hosts["yarn-history"]["host"]}}</value>
   </property>
   <property>
     <name>mapreduce.map.output.compress</name>
