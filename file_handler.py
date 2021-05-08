@@ -1,7 +1,7 @@
 from pathlib import Path
 import shutil, os
-from main import BASE_PATH
 
+BASE_PATH = Path(__file__).parent.absolute()
 TEMPLATE_PATH = os.path.join(BASE_PATH, "templates")
 TEMPLATE_SUFFIX = ".template"
 TARGET_DIR = "target"
@@ -65,3 +65,4 @@ def write_all_templates(base_components, template_engine, data):
 def write_docker_compose(yaml_str):
     print("writing docker-compose.yml")
     _write_file(Path(os.path.join(BASE_PATH, TARGET_DIR, "docker-compose.yml")), yaml_str)
+

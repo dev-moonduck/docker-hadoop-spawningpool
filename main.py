@@ -6,9 +6,7 @@ import traceback
 import utils
 import template
 import docker_compose
-
-BASE_PATH = Path(__file__).parent.absolute()
-
+import downloader
 
 def parse_arg():
     # Todo: Target clean up option
@@ -22,6 +20,9 @@ def parse_arg():
     parser.add_argument("--hue", action='store_true', help="build hue")
     parser.add_argument("--all", action='store_true', help="Equivalent to --hive --spark --spark-thrift --hue")
 
+    parser.add_argument("--force-download-hadoop", action='store_true', help="Always download hadoop")
+    parser.add_argument("--force-download-hive", action='store_true', help="Always download hive")
+    parser.add_argument("--force-download-spark", action='store_true', help="Always download spark")
     # Provided tar/jar path
     parser.add_argument("--provided-hadoop", help="If you already have hadoop tar, provide local path(must be relative "
                                                   + "path) with this option")
@@ -40,6 +41,7 @@ def parse_arg():
     parser.add_argument("--java-version", default="8", help="Java version, Only 8 or 11 are supported")
     parser.add_argument("--zookeeper-version", default="3.6.2", help="Zookeeper version")
     parser.add_argument("--hue-version", default="4.9.0", help="Docker hue version")
+    parser.add_argument("--scala-version", default="2.13", help="Scala version to download spark")
 
     # Docker image name
     parser.add_argument("--image-name-hadoop", default="local-hadoop", help="hadoop docker image name")
@@ -58,6 +60,7 @@ def run():
         file_handler.copy_all_non_templates(images_to_build)
         file_handler.write_all_templates(images_to_build, template, template_data)
         file_handler.write_docker_compose(docker_compose.generate_yaml(template_data))
+        downloader.download(args)
     except Exception as e:
         traceback.print_exception()
         print("Template data: {}".format(template_data))
