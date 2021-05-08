@@ -119,7 +119,7 @@ def _component_hosts(args):
     if args.spark or args.all:
         hosts["spark-history"] = {"host": "spark-history"}
     if args.hue or args.all:
-        hosts["hue"] = {"host": "hue"}
+        hosts["hue"] = {"host": "hue", "port": "8888"}
 
     return hosts
 
