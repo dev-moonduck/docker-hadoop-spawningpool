@@ -10,7 +10,7 @@ from file_handler import BASE_PATH
 # So I'd forked repository and uploaded binaries in my repository
 TO_DOWNLOAD = {
     "spark": "https://github.com/dev-moonduck/spark/releases/download/v{SPARK_VERSION}-{SCALA_VERSION}-{HADOOP_VERSION}"
-             + "/spark-{SPARK_VERSION}-{SCALA_VERSION}-{HADOOP_VERSION}-hive.tar.gz",
+             + "/spark-{SPARK_VERSION}-{SCALA_VERSION}-{HADOOP_VERSION}.tar.gz",
     "hadoop": "https://github.com/dev-moonduck/hadoop/releases/download"
               + "/v{HADOOP_VERSION}/hadoop-{HADOOP_VERSION}.tar.gz",
     "hive": "https://github.com/dev-moonduck/hive/releases/download/v{HIVE_VERSION}"
@@ -65,7 +65,7 @@ def download(args):
             (not Path(dest).exists() or args.force_download_hive):
         downloader_threads.append(launch_downloader(TO_DOWNLOAD["hive"].format(HIVE_VERSION=args.hive_version), dest))
 
-    dest = DOWNLOAD_LOCATION["spark"] + "/spark-{SPARK_VERSION}-{SCALA_VERSION}-{HADOOP_VERSION}-hive.tar.gz".format(
+    dest = DOWNLOAD_LOCATION["spark"] + "/spark-{SPARK_VERSION}-{SCALA_VERSION}-{HADOOP_VERSION}.tar.gz".format(
         HADOOP_VERSION=args.hadoop_version,
         SCALA_VERSION=args.scala_version,
         SPARK_VERSION=args.spark_version

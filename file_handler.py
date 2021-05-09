@@ -79,3 +79,14 @@ def decompress_tarball(args):
                 f.extractall(tar_dest.parent)
             shutil.move(os.path.join(tar_dest.parent, "apache-hive-{HIVE_VERSION}-bin".format(
                 HIVE_VERSION=args.hive_version)), tar_dest)
+
+    if args.spark_history or args.spark_thrift or args.all:
+        tar_dest = Path(os.path.join(BASE_PATH, TARGET_DIR, "spark", "spark-bin"))
+        if not tar_dest.exists():
+            tarball = "spark-{SPARK_VERSION}-{SCALA_VERSION}-{HADOOP_VERSION}.tar.gz".format(
+                HADOOP_VERSION=args.hadoop_version, SCALA_VERSION=args.scala_version, SPARK_VERSION=args.spark_version)
+            tar_path = Path(os.path.join(BASE_PATH, TARGET_DIR, "spark", tarball))
+            with tarfile.open(tar_path) as f:
+                f.extractall(tar_dest.parent)
+            shutil.move(os.path.join(tar_dest.parent, "spark-{SPARK_VERSION}-bin-spark".format(
+                SPARK_VERSION=args.spark_version)), tar_dest)
