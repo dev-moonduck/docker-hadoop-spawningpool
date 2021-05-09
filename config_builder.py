@@ -26,28 +26,32 @@ MINIMUM_INSTANCES = {
         "hosts": ["primary-namenode", "namenode1", "journalnode1", "resource-manager", "yarn-history", "zookeeper1"],
         "components": ["primary-namenode", "journalnode", "resource-manager", "yarn-history"],
         "image": "hadoop",
-        "ports": ["9870:9870", "8088:8088"],
-        "volumes": []
+        "ports": ["9870:9870", "8088:8088", "8188:8188"],
+        "volumes": [],
+        "environment": {"MY_NODE_NUM=1"}
     },
     "secondary-namenode": {
         "hosts": ["secondary-namenode", "namenode2", "journalnode2", "zookeeper2"],
         "components": ["secondary-namenode", "journalnode"],
         "image": "hadoop",
         "ports": ["9871:9870"],
-        "volumes": []
+        "volumes": [],
+        "environment": {"MY_NODE_NUM=2"}
     },
     "datanode1": {
         "hosts": ["datanode1", "journalnode3", "zookeeper3"],
         "components": ["datanode", "journalnode"],
         "image": "hadoop",
         "ports": ["9864:9864"],
-        "volumes": []
+        "volumes": [],
+        "environment": {"MY_NODE_NUM=3"}
     }
 }
 
 INSTANCE_MAPPING = {
     "hive": "primary-namenode",
-    "spark": "secondary-namenode",
+    "spark-history": "secondary-namenode",
+    "spark-thrift": "secondary-namenode",
     "hue": "secondary-namenode"
 }
 
@@ -61,9 +65,22 @@ def build_config_from_args(args):
         "hosts": _component_hosts(args),
         "groups": PREDEF_GROUPS,
         "users": PREDEF_USERS,
+        "components": _component_to_build(args),
         "additional": _additional_config(args)
     }
 
+
+def _component_to_build(args):
+    component_name = ["cluster-starter", "hadoop"]
+    if args.hive or args.all:
+        component_name.append("hive")
+    if args.hue or args.all:
+        component_name.append("hue")
+    if args.spark_thrift or args.all:
+        component_name.append("spark-thrift")
+    if args.spark_history or args.all:
+        component_name.append("spark-history")
+    return component_name
 
 def _additional_config(args):
     config = {
@@ -105,7 +122,7 @@ def _component_hosts(args):
         "zookeeper": {"host": ["zookeeper1", "zookeeper2", "zookeeper3"], "port": "2181"},
         "yarn-history": {"host": "yarn-history", "port": "8188"},
         "resource-manager": {
-            "host": "resource-manager", "port": "8088", "resource-tracker-port": "8031", "scheduler-port": "8030"
+            "host": "resource-manager", "port": "8032", "web-port": "8088", "resource-tracker-port": "8031", "scheduler-port": "8030"
         }
     }
     for i in range(2, args.num_datanode + 1):
@@ -114,11 +131,11 @@ def _component_hosts(args):
         hosts["hive-server"] = {"host": "hive-server", "thrift-port": "10000", "http-port": "10001"}
         hosts["hive-metastore"] = {"host": "hive-metastore", "thrift-port": "9083", "metastore-db-host": "cluster-db",
                                    "metastore-db-port": "5432"}
-    if args.spark or args.all:
-        hosts["spark-history"] = {"host": "spark-history"}
+    if args.spark_history or args.all:
+        hosts["spark-history"] = {"host": "spark-history", "port": "18080"}
 
     if args.spark_thrift or args.all:
-        hosts["spark-thrift"] = {"host": "spark-thrift"}
+        hosts["spark-thrift"] = {"host": "spark-thrift", "port": "4040"}
 
     if args.hue or args.all:
         hosts["hue"] = {"host": "hue", "port": "8888", "db-host": "cluster-db", "db-port": "5432"}
@@ -136,7 +153,7 @@ def _component_versions(args):
         version["hive"] = args.hive_version
     if args.hue or args.all:
         version["hue"] = args.hue_version
-    if args.spark or args.spark_thrift or args.all:
+    if args.spark_history or args.spark_thrift or args.all:
         version["spark"] = args.spark_version
     return version
 
@@ -166,22 +183,25 @@ def _instances(args):
         all_instances[instance_to_run]["ports"] += ["10000:10000", "10001:10001", "10002:10002", "9083:9083"]
         all_instances[instance_to_run]["image"] = "hive"
 
-    if args.spark or args.all:
-        instance_to_run = INSTANCE_MAPPING["spark"]
+    if args.spark_history or args.all:
+        instance_to_run = INSTANCE_MAPPING["spark-history"]
         all_instances[instance_to_run]["hosts"] += ["spark-history"]
         all_instances[instance_to_run]["components"] += ["spark-history"]
         all_instances[instance_to_run]["ports"] += ["18080:18080"]
         all_instances[instance_to_run]["volumes"] += [
-            "./spark-bin:/opt/spark",
-            "./scripts/run_history_server.sh:/scripts/run_history_server.sh",
-            "./scripts/run_thrift_server.sh:/scripts/run_thrift_server.sh"
+            "./spark/spark-bin:/opt/spark",
+            "./spark-history/scripts/run_history_server.sh:/scripts/run_history_server.sh",
+            "./spark-thrift/scripts/run_thrift_server.sh:/scripts/run_thrift_server.sh",
+            "./spark-history/conf/history_server.conf:/spark_history_server.conf"
         ]
+        all_instances[instance_to_run]["environment"].add("SPARK_HOME=/opt/spark")
 
     if args.spark_thrift or args.all:
-        instance_to_run = INSTANCE_MAPPING["spark"]
+        instance_to_run = INSTANCE_MAPPING["spark-thrift"]
         all_instances[instance_to_run]["hosts"] += ["spark-thrift"]
         all_instances[instance_to_run]["components"] += ["spark-thrift"]
-        all_instances[instance_to_run]["ports"] += ["10010:10000", "10011:10001", "10012:10002"]
+        all_instances[instance_to_run]["ports"] += ["10010:10000", "10011:10001", "10012:10002", "4040:4040"]
+        all_instances[instance_to_run]["environment"].add("SPARK_HOME=/opt/spark")
 
     if args.hue or args.all:
         instance_to_run = INSTANCE_MAPPING["hue"]

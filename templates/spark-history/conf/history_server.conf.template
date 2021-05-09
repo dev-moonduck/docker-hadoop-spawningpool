@@ -1,0 +1,2 @@
+spark.history.fs.logDirectory=hdfs://{{clusterName}}/tmp/
+spark.history.fs.update.interval=10s

@@ -37,6 +37,10 @@
     <value>{{hosts["resource-manager"]["host"]}}:{{hosts["resource-manager"]["port"]}}</value>
   </property>
   <property>
+    <name>yarn.resourcemanager.webapp.address</name>
+    <value>{{hosts["resource-manager"]["host"]}}:{{hosts["resource-manager"]["web-port"]}}</value>
+  </property>
+  <property>
     <name>yarn.resourcemanager.scheduler.address</name>
     <value>{{hosts["resource-manager"]["host"]}}:{{hosts["resource-manager"]["scheduler-port"]}}</value>
   </property>

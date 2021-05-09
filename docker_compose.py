@@ -45,16 +45,18 @@ def generate_yaml(data):
         }
         if "ports" in instance and instance["ports"]:
             instance_conf["ports"] = instance["ports"]
+
         if "hosts" in instance and instance["hosts"]:
             instance_conf["networks"]["hadoop.net"] = { "aliases": instance["hosts"] }
-            zookeeper = list(filter(lambda h: "zookeeper" in h, instance["hosts"]))
-            if zookeeper:
-                node_id = zookeeper[0][len("zookeeper"):]
-                instance_conf["environment"] = {
-                    "MY_NODE_NUM": node_id
-                }
+
+        if "volumes" in instance and instance["volumes"]:
+            instance_conf["volumes"] = instance["volumes"]
+
+        if "environment" in instance and instance["environment"]:
+            instance_conf["environment"] = list(instance["environment"])
+
         compose_yaml["services"][name] = instance_conf
-    if "hive-metastore" in data["hosts"]:
+    if "hive-metastore" in data["hosts"] or "hue" in data["hosts"]:
         compose_yaml["services"]["cluster-db"] = {
             "image": "postgres:13.1",
             "container_name": "cluster-db",
@@ -65,10 +67,12 @@ def generate_yaml(data):
             },
             "networks": ["hadoop.net"],
             "ports": ["5432:5432"],
-            "volumes": [
-                "./hive/sql/create_db.sql:/docker-entrypoint-initdb.d/create_hive_db.sql",
-            ]
+            "volumes": []
         }
+        if "hive-metastore" in data["hosts"]:
+            compose_yaml["services"]["cluster-db"]["volumes"].append(
+                "./hive/sql/create_db.sql:/docker-entrypoint-initdb.d/create_hive_db.sql"
+            )
         if "hue" in data["hosts"]:
             compose_yaml["services"]["cluster-db"]["volumes"].append(
                 "./hue/sql/create_db.sql:/docker-entrypoint-initdb.d/create_hue_db.sql"

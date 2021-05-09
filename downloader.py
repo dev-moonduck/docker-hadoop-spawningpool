@@ -71,7 +71,7 @@ def download(args):
         SPARK_VERSION=args.spark_version
     )
 
-    if (args.spark or args.spark_thrift or args.all) and \
+    if (args.spark_history or args.spark_thrift or args.all) and \
             (not Path(dest).exists() or args.force_download_spark):
         downloader_threads.append(launch_downloader(
             TO_DOWNLOAD["spark"].format(HADOOP_VERSION=args.hadoop_version, SCALA_VERSION=args.scala_version,

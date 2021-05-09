@@ -1,2 +1,0 @@
-spark.history.fs.logDirectory=hdfs://nameservice/tmp/
-spark.history.fs.update.interval=10s

@@ -14,7 +14,7 @@ def parse_arg():
 
     # Enable/disable components
     parser.add_argument("--hive", action='store_true', help="build hive server, metastore")
-    parser.add_argument("--spark", action='store_true', help="download spark and run spark history server")
+    parser.add_argument("--spark-history", action='store_true', help="download spark and run spark history server")
     parser.add_argument("--spark-thrift", action='store_true', help="download spark and run spark thrift server")
     parser.add_argument("--hue", action='store_true', help="build hue")
     parser.add_argument("--presto", action='store_true', help="build presto on spark")
@@ -57,7 +57,7 @@ def run():
     args = parse_arg()
     try:
         template_data = config_builder.build_config_from_args(args)
-        images_to_build = utils.get_images_to_build(template_data)
+        images_to_build = template_data["components"]
         file_handler.copy_all_non_templates(images_to_build)
         file_handler.write_all_templates(images_to_build, template, template_data)
         file_handler.write_docker_compose(docker_compose.generate_yaml(template_data))

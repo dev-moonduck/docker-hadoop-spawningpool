@@ -187,34 +187,27 @@ echo "Hive server has been up!"
 {% endif %}
 
 
-# # Run Spark HistoryServer
-# SPARK_HS_ADDR="spark-historyserver"
-# SPARK_HS_PORT=8188
-# echo "Trying to run spark historyserver..."
-# agent_addr="$SPARK_HS_ADDR:$AGENT_PORT"
-# wait_agent $agent_addr
-# run_remote_script $agent_addr "/scripts/run_spark_hs.sh"
+# Run Spark HistoryServer
+SPARK_HS_ADDR="{{hosts["spark-history"]["host"]}}"
+SPARK_HS_PORT={{hosts["spark-history"]["port"]}}
+echo "Trying to run spark historyserver..."
+agent_addr="$SPARK_HS_ADDR:$AGENT_PORT"
+wait_agent $agent_addr
+run_remote_script $agent_addr "/scripts/run_history_server.sh"
 
-# wait_for_it "$YARN_HS_ADDR:$YARN_HS_PORT"
-# echo "Yarn history server has been up!"
-
-# wait_for_it "$SPARK_HS_ADDR:$SPARK_HS_PORT"
-# echo "Spark history server has been up!"
+wait_for_it "$SPARK_HS_ADDR:$SPARK_HS_PORT"
+echo "Spark history server has been up!"
 
 
-
-# # Waiting for tez files in HDFS
-# # wait_files_in_hdfs /apps/tez/apache-tez-0.9.2-bin.tar.gz /apps/tez 5 100
-
-# # Run Spark thrift server
-# SPARK_THRIFT_ADDR="spark-adhoc"
-# SPARK_THRIFT_PORT=4040
-# echo "Trying to run spark thrift server..."
-# agent_addr="$SPARK_THRIFT_ADDR:$AGENT_PORT"
-# wait_agent $agent_addr
-# run_remote_script $agent_addr "/scripts/run_spark_thrift_server.sh"
-# wait_for_it "$SPARK_THRIFT_ADDR:$SPARK_THRIFT_PORT"
-# echo "Spark thrift server has been up!"
+# Run Spark thrift server
+SPARK_THRIFT_ADDR="{{hosts["spark-thrift"]["host"]}}"
+SPARK_THRIFT_PORT={{hosts["spark-thrift"]["port"]}}
+echo "Trying to run spark thrift server..."
+agent_addr="$SPARK_THRIFT_ADDR:$AGENT_PORT"
+wait_agent $agent_addr
+run_remote_script $agent_addr "/scripts/run_thrift_server.sh"
+wait_for_it "$SPARK_THRIFT_ADDR:$SPARK_THRIFT_PORT"
+echo "Spark thrift server has been up!"
 
 # Run Hue
 HUE_ADDR="{{hosts["hue"]["host"]}}"
