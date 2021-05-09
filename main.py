@@ -49,11 +49,12 @@ def run():
     args = parse_arg()
     try:
         template_data = config_builder.build_config_from_args(args)
+        downloader.download(args)
+        file_handler.decompress_tarball(args)
         images_to_build = template_data["components"]
         file_handler.copy_all_non_templates(images_to_build)
         file_handler.write_all_templates(images_to_build, template, template_data)
         file_handler.write_docker_compose(docker_compose.generate_yaml(template_data))
-        downloader.download(args)
     except Exception as e:
         traceback.print_exception()
         print("Template data: {}".format(template_data))

@@ -1,5 +1,7 @@
 from pathlib import Path
-import shutil, os
+import shutil
+import os
+import tarfile
 
 BASE_PATH = Path(__file__).parent.absolute()
 TEMPLATE_PATH = os.path.join(BASE_PATH, "templates")
@@ -66,3 +68,14 @@ def write_docker_compose(yaml_str):
     print("writing docker-compose.yml")
     _write_file(Path(os.path.join(BASE_PATH, TARGET_DIR, "docker-compose.yml")), yaml_str)
 
+
+def decompress_tarball(args):
+    if args.hive or args.all:
+        tar_dest = Path(os.path.join(BASE_PATH, TARGET_DIR, "hive", "hive-bin"))
+        if not tar_dest.exists():
+            tarball = "apache-hive-{HIVE_VERSION}-bin.tar.gz".format(HIVE_VERSION=args.hive_version)
+            tar_path = Path(os.path.join(BASE_PATH, TARGET_DIR, "hive", tarball))
+            with tarfile.open(tar_path) as f:
+                f.extractall(tar_dest.parent)
+            shutil.move(os.path.join(tar_dest.parent, "apache-hive-{HIVE_VERSION}-bin".format(
+                HIVE_VERSION=args.hive_version)), tar_dest)
