@@ -1,5 +1,4 @@
 import argparse
-from pathlib import Path
 import config_builder
 import file_handler
 import traceback
@@ -18,11 +17,14 @@ def parse_arg():
     parser.add_argument("--spark", action='store_true', help="download spark and run spark history server")
     parser.add_argument("--spark-thrift", action='store_true', help="download spark and run spark thrift server")
     parser.add_argument("--hue", action='store_true', help="build hue")
-    parser.add_argument("--all", action='store_true', help="Equivalent to --hive --spark --spark-thrift --hue")
+    parser.add_argument("--presto", action='store_true', help="build presto on spark")
+    parser.add_argument("--all", action='store_true', help="Equivalent to --hive --spark --spark-thrift --hue --presto")
 
     parser.add_argument("--force-download-hadoop", action='store_true', help="Always download hadoop")
     parser.add_argument("--force-download-hive", action='store_true', help="Always download hive")
     parser.add_argument("--force-download-spark", action='store_true', help="Always download spark")
+    parser.add_argument("--force-download-presto", action='store_true', help="Always download presto")
+
     # Provided tar/jar path
     parser.add_argument("--provided-hadoop", help="If you already have hadoop tar, provide local path(must be relative "
                                                   + "path) with this option")
@@ -42,6 +44,7 @@ def parse_arg():
     parser.add_argument("--zookeeper-version", default="3.6.2", help="Zookeeper version")
     parser.add_argument("--hue-version", default="4.9.0", help="Docker hue version")
     parser.add_argument("--scala-version", default="2.13", help="Scala version to download spark")
+    parser.add_argument("--presto-version", default="0.252", help="Presto on spark version")
 
     # Docker image name
     parser.add_argument("--image-name-hadoop", default="local-hadoop", help="hadoop docker image name")
@@ -55,8 +58,6 @@ def run():
     try:
         template_data = config_builder.build_config_from_args(args)
         images_to_build = utils.get_images_to_build(template_data)
-        if args.spark_thrift:
-            images_to_build.add("spark-thrift")
         file_handler.copy_all_non_templates(images_to_build)
         file_handler.write_all_templates(images_to_build, template, template_data)
         file_handler.write_docker_compose(docker_compose.generate_yaml(template_data))

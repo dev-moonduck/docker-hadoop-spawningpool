@@ -14,7 +14,9 @@ TO_DOWNLOAD = {
     "hadoop": "https://github.com/dev-moonduck/hadoop/releases/download"
               + "/v{HADOOP_VERSION}/hadoop-{HADOOP_VERSION}.tar.gz",
     "hive": "https://github.com/dev-moonduck/hive/releases/download/v{HIVE_VERSION}"
-            + "/apache-hive-{HIVE_VERSION}-bin.tar.gz"
+            + "/apache-hive-{HIVE_VERSION}-bin.tar.gz",
+    "presto": "https://repo1.maven.org/maven2/com/facebook/presto/presto-spark-package"
+              "/{PRESTO_VERSION}/presto-spark-package-{PRESTO_VERSION}.tar.gz"
 }
 
 TARGET_BASE_PATH = str(BASE_PATH) + "/target"
@@ -22,7 +24,8 @@ TARGET_BASE_PATH = str(BASE_PATH) + "/target"
 DOWNLOAD_LOCATION = {
     "spark": TARGET_BASE_PATH + "/spark",
     "hadoop": TARGET_BASE_PATH + "/hadoop",
-    "hive": TARGET_BASE_PATH + "/hive"
+    "hive": TARGET_BASE_PATH + "/hive",
+    "presto": TARGET_BASE_PATH + "/presto"
 }
 
 
@@ -74,5 +77,12 @@ def download(args):
             TO_DOWNLOAD["spark"].format(HADOOP_VERSION=args.hadoop_version, SCALA_VERSION=args.scala_version,
                                         SPARK_VERSION=args.spark_version), dest))
 
+    dest = DOWNLOAD_LOCATION["presto"] + "/presto-spark-package-{PRESTO_VERSION}.tar.gz".format(
+        PRESTO_VERSION=args.presto_version
+    )
+
+    if (args.presto or args.all) and (not Path(dest).exists() or args.force_download_spark):
+        downloader_threads.append(launch_downloader(TO_DOWNLOAD["presto"].format(PRESTO_VERSION=args.presto_version),
+                                                    dest))
     for t in downloader_threads:
         t.join()
