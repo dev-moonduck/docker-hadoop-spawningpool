@@ -102,7 +102,7 @@ done
 echo "All journal and zookeeper have been up!"
 
 # Run Namenodes
-NAMENODE_PORT={{hosts["primary-namenode"]["port"]}}
+NAMENODE_PORT={{hosts["primary-namenode"]["rpc-port"]}}
 # Run Active Namenode
 echo "Trying to run namenode(active)..."
 ACTIVE_NAMENODE="{{hosts["primary-namenode"]["host"]}}"
@@ -121,7 +121,7 @@ wait_for_it "$STANDBY_NAMENODE:$NAMENODE_PORT"
 echo "All namenode have been up!"
 
 # Run Datanodes and node manager
-DATANODE_PORT={{hosts["datanode"]["port"]}}
+DATANODE_PORT={{hosts["datanode"]["rpc-port"]}}
 NODEMANAGER_PORT={{hosts["datanode"]["nodemanager-port"]}}
 echo "Trying to run datanode/nodemanager..."
 DATA_NODES=("{{ hosts["datanode"]["host"] | join("\" \"")}}")

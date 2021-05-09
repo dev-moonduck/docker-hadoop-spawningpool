@@ -22,7 +22,7 @@
     </property>
     <property>
         <name>hive.metastore.uris</name>
-        <value>thrift://{{hosts["hive-metastore"]["host"]}}:{{hosts["hive-metastore"]["port"]}}</value>
+        <value>thrift://{{hosts["hive-metastore"]["host"]}}:{{hosts["hive-metastore"]["thrift-port"]}}</value>
     </property>
     <property>
         <name>hive.server2.thrift.port</name>

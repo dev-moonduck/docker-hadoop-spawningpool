@@ -99,7 +99,7 @@ def _component_hosts(args):
             "host": "secondary-namenode", "rpc-port": "9000", "http-port": "9870"
         },
         "datanode": {
-            "host": ["datanode1"], "port": "9084", "nodemanager-port": "8042"
+            "host": ["datanode1"], "rpc-port": "9864", "nodemanager-port": "8042"
         },
         "journalnode": {"host": ["journalnode1", "journalnode2", "journalnode3"], "port": "8485"},
         "zookeeper": {"host": ["zookeeper1", "zookeeper2", "zookeeper3"], "port": "2181"},
@@ -134,6 +134,8 @@ def _component_versions(args):
         version["hive"] = args.hive_version
     if args.hue or args.all:
         version["hue"] = args.hue_version
+    if args.spark or args.spark_thrift or args.all:
+        version["spark"] = args.spark_version
     return version
 
 
