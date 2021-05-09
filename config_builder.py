@@ -83,9 +83,9 @@ def _additional_config(args):
         }
     if args.hue or args.all:
         config["hue"] = {
-            "hue-db-host": "cluster-db",
-            "hue-db-port": "5432",
-            "hue-db-name": "hue"
+            "hue-db-name": "hue",
+            "db-username": "hue",
+            "db-password": "hue"
         }
     return config
 
@@ -119,7 +119,7 @@ def _component_hosts(args):
     if args.spark or args.all:
         hosts["spark-history"] = {"host": "spark-history"}
     if args.hue or args.all:
-        hosts["hue"] = {"host": "hue", "port": "8888"}
+        hosts["hue"] = {"host": "hue", "port": "8888", "db-host": "cluster-db", "db-port": "5432"}
 
     return hosts
 
