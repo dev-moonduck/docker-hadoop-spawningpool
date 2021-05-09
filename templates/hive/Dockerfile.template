@@ -12,15 +12,10 @@ ENV PATH=$HIVE_HOME/bin:$PATH
 
 WORKDIR /opt
 
-{% if binary["hive"] -%}
-COPY {{binary["hive"]}} /tmp/apache-hive.tar.gz
-{% endif -%}
+COPY apache-hive-{{dependencyVersions["hive"]}}-bin.tar.gz /tmp/apache-hive.tar.gz
 
 #Install Hive and PostgreSQL JDBC
-RUN {% if not binary["hive"] -%}
-    curl https://archive.apache.org/dist/hive/hive-$HIVE_VERSION/apache-hive-$HIVE_VERSION-bin.tar.gz -o apache-hive.tar.gz && \
-    {% endif -%}
-	mkdir -p /opt && \
+RUN mkdir -p /opt && \
 	cd /tmp && tar -xzvf apache-hive.tar.gz && \
 	mv apache-hive-$HIVE_VERSION-bin /opt/hive && \
 	rm apache-hive.tar.gz

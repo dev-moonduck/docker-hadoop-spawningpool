@@ -7,12 +7,8 @@ ENV ZOOKEEPER_HOME=/opt/zookeeper
 ENV HADOOP_HOME=/opt/hadoop-{{dependencyVersions["hadoop"]}}
 ENV HADOOP_CONF_DIR=/etc/hadoop
 ENV PATH=$HADOOP_HOME/bin/:$PATH
-{% if not binary["hadoop"] -%}
-ARG HADOOP_ARCHIVE_URL="https://www.apache.org/dist/hadoop"
-ENV HADOOP_URL ${HADOOP_ARCHIVE_URL}/common/hadoop-{{dependencyVersions["hadoop"]}}/hadoop-{{dependencyVersions["hadoop"]}}.tar.gz
-{% else %}
-COPY {{binary["hadoop"]}} /tmp/hadoop.tar.gz
-{% endif %}
+COPY hadoop-{{dependencyVersions["hadoop"]}}.tar.gz /tmp/hadoop.tar.gz
+
 RUN apt update && DEBIAN_FRONTEND=noninteractive apt install -y --no-install-recommends \
       net-tools \
       curl \
@@ -23,12 +19,6 @@ RUN apt update && DEBIAN_FRONTEND=noninteractive apt install -y --no-install-rec
       python3 \
     && rm -rf /var/lib/apt/lists/* \
     && set -x \
-    {% if not binary["hadoop"] -%}
-    && curl -O https://dist.apache.org/repos/dist/release/hadoop/common/KEYS && gpg --import KEYS \
-    && curl -fSL "$HADOOP_URL" -o /tmp/hadoop.tar.gz \
-    && curl -fSL "$HADOOP_URL.asc" -o /tmp/hadoop.tar.gz.asc \
-    && gpg --verify /tmp/hadoop.tar.gz.asc \
-    {% endif -%}
     && tar -xvf /tmp/hadoop.tar.gz -C /opt/ \
     && rm /tmp/hadoop.tar.gz* \
     && ln -s /opt/hadoop-{{dependencyVersions["hadoop"]}}/etc/hadoop /etc/hadoop \

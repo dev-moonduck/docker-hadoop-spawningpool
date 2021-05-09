@@ -4,11 +4,17 @@ import threading
 from pathlib import Path
 from file_handler import BASE_PATH
 
+
+# Apparently Apache official mirror for download restrict download if it is not browser to protect against DOS attack
+# But github allows script to download with good performance.
+# So I'd forked repository and uploaded binaries in my repository
 TO_DOWNLOAD = {
     "spark": "https://github.com/dev-moonduck/spark/releases/download/v{SPARK_VERSION}-{SCALA_VERSION}-{HADOOP_VERSION}"
              + "/spark-{SPARK_VERSION}-{SCALA_VERSION}-{HADOOP_VERSION}-hive.tar.gz",
-    "hadoop": "https://www.apache.org/dist/hadoop/common/hadoop-{HADOOP_VERSION}/hadoop-{HADOOP_VERSION}.tar.gz",
-    "hive": "https://archive.apache.org/dist/hive/hive-{HIVE_VERSION}/apache-hive-{HIVE_VERSION}-bin.tar.gz"
+    "hadoop": "https://github.com/dev-moonduck/hadoop/releases/download"
+              + "/v{HADOOP_VERSION}/hadoop-{HADOOP_VERSION}.tar.gz",
+    "hive": "https://github.com/dev-moonduck/hive/releases/download/v{HIVE_VERSION}"
+            + "/apache-hive-{HIVE_VERSION}-bin.tar.gz"
 }
 
 TARGET_BASE_PATH = str(BASE_PATH) + "/target"
