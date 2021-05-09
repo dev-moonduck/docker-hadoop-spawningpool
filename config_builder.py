@@ -61,7 +61,6 @@ def build_config_from_args(args):
         "clusterName": "nameservice",
         "dependencyVersions": _component_versions(args),
         "instances": _instances(args),
-        "binary": _provided_bins(args),
         "hosts": _component_hosts(args),
         "groups": PREDEF_GROUPS,
         "users": PREDEF_USERS,
@@ -181,7 +180,15 @@ def _instances(args):
         all_instances[instance_to_run]["hosts"] += ["hive-server", "hive-metastore"]
         all_instances[instance_to_run]["components"] += ["hive-server", "hive-metastore"]
         all_instances[instance_to_run]["ports"] += ["10000:10000", "10001:10001", "10002:10002", "9083:9083"]
-        all_instances[instance_to_run]["image"] = "hive"
+        all_instances[instance_to_run]["image"] = "hadoop"
+        all_instances[instance_to_run]["environment"].add("HIVE_HOME=/opt/hive")
+        all_instances[instance_to_run]["environment"].add("HIVE_CONF_DIR=/opt/hive/conf")
+        all_instances[instance_to_run]["environment"].add("PATH=$PATH:/opt/hive/bin")
+        all_instances[instance_to_run]["volumes"] += [
+            "./hive/scripts/run_hive_metastore.sh:/scripts/run_hive_metastore.sh",
+            "./hive/scripts/run_hive_server.sh:/scripts/run_hive_server.sh",
+            "./hive/hive-bin:/opt/hive"
+        ]
 
     if args.spark_history or args.all:
         instance_to_run = INSTANCE_MAPPING["spark-history"]

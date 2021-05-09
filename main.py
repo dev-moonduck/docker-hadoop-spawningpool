@@ -25,14 +25,6 @@ def parse_arg():
     parser.add_argument("--force-download-spark", action='store_true', help="Always download spark")
     parser.add_argument("--force-download-presto", action='store_true', help="Always download presto")
 
-    # Provided tar/jar path
-    parser.add_argument("--provided-hadoop", help="If you already have hadoop tar, provide local path(must be relative "
-                                                  + "path) with this option")
-    parser.add_argument("--provided-hive", help="If you already have hive tar, provide local path(must be relative "
-                                                + "path) with this option")
-    parser.add_argument("--provided-spark", help="If you already have spark tar, provide local path(must be relative "
-                                                 + "path with this option")
-
     # Dependency version configs
     parser.add_argument("--hadoop-version", default="3.3.0",
                         help="Hadoop version, if you specified --provided-hadoop option, it should match "
