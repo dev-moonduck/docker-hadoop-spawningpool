@@ -10,19 +10,9 @@ build_hadoop() {
   docker build -t {{additional["image-name"]["hadoop"]}} $THIS_LOCATION/hadoop/
 }
 
-build_hive() {
-  docker build -t {{additional["image-name"]["hive"]}} $THIS_LOCATION/hive/
-}
-
-build_hue() {
-  docker build -t {{additional["image-name"]["hue"]}} $THIS_LOCATION/hue/
-}
-
 build_all() {
   build_cluster_starter
   build_hadoop
-  build_hive
-  build_hue
 }
 
 case "$1" in
@@ -34,12 +24,6 @@ case "$1" in
       ;;
     cluster-starter)
       build_cluster_starter
-      ;;
-    hive)
-      build_hive
-      ;;
-    hue)
-      build_hue
       ;;
 esac
 

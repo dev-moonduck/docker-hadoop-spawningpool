@@ -85,8 +85,6 @@ def _additional_config(args):
     config = {
         "image-name": {
             "hadoop": args.image_name_hadoop,
-            "hive": args.image_name_hive,
-            "hue": args.image_name_hue,
             "cluster-starter": "cluster-starter"
         },
         "agent": {
@@ -160,6 +158,9 @@ def _component_versions(args):
 def _instances(args):
     # Required instances
     all_instances = deepcopy(MINIMUM_INSTANCES)
+    all_instances["primary-namenode"]["image"] = args.image_name_hadoop
+    all_instances["secondary-namenode"]["image"] = args.image_name_hadoop
+    all_instances["datanode1"]["image"] = args.image_name_hadoop
 
     # Set optional instances
     # Add more datanode
@@ -169,7 +170,7 @@ def _instances(args):
         all_instances["datanode" + str(i)] = {
             "hosts": ["datanode" + str(i)],
             "components": ["datanode"],
-            "image": "hadoop",
+            "image": args.image_name_hadoop,
             "ports": [str(external_port) + ":9864"]  # 9865, 9866, ...
         }
 
@@ -180,7 +181,6 @@ def _instances(args):
         all_instances[instance_to_run]["hosts"] += ["hive-server", "hive-metastore"]
         all_instances[instance_to_run]["components"] += ["hive-server", "hive-metastore"]
         all_instances[instance_to_run]["ports"] += ["10000:10000", "10001:10001", "10002:10002", "9083:9083"]
-        all_instances[instance_to_run]["image"] = "hadoop"
         all_instances[instance_to_run]["environment"].add("HIVE_HOME=/opt/hive")
         all_instances[instance_to_run]["environment"].add("HIVE_CONF_DIR=/opt/hive/conf")
         all_instances[instance_to_run]["environment"].add("PATH=$PATH:/opt/hive/bin")
@@ -211,10 +211,21 @@ def _instances(args):
         all_instances[instance_to_run]["environment"].add("SPARK_HOME=/opt/spark")
 
     if args.hue or args.all:
-        instance_to_run = INSTANCE_MAPPING["hue"]
-        all_instances[instance_to_run]["hosts"] += ["hue"]
-        all_instances[instance_to_run]["image"] = "hue"
-        all_instances[instance_to_run]["ports"] += ["8888:8888"]
+        instance_to_run = "hue"
+        all_instances[instance_to_run] = {
+            "hosts": ["hue"],
+            "image": "gethue/hue:" + args.hue_version,
+            "ports": ["8888:8888"],
+            "environment": {"HUE_HOME=/usr/share/hue"},
+            "volumes": [
+                "./hue/conf/hue.ini:/usr/share/hue/desktop/conf/hue.ini",
+                "./hue/conf/log.conf:/usr/share/hue/desktop/conf/log.conf"
+            ],
+            "additional": {
+                "mem_limit": "2g",
+                "cpus": "1"
+            }
+        }
 
     return all_instances
 

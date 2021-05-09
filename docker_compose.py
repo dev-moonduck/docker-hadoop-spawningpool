@@ -36,7 +36,7 @@ def generate_yaml(data):
     compose_yaml = copy.deepcopy(DOCKER_COMPOSE_YAML)
     for name, instance in data["instances"].items():
         instance_conf = {
-            "image": data["additional"]["image-name"][instance["image"]],
+            "image": instance["image"],
             "container_name": name,
             "networks": {
                 "hadoop.net": None
@@ -54,6 +54,10 @@ def generate_yaml(data):
 
         if "environment" in instance and instance["environment"]:
             instance_conf["environment"] = list(instance["environment"])
+
+        if "additional" in instance:
+            for k, v in instance["additional"].items():
+                instance_conf[k] = v
 
         compose_yaml["services"][name] = instance_conf
     if "hive-metastore" in data["hosts"] or "hue" in data["hosts"]:

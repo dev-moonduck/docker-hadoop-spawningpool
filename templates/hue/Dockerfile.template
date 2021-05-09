@@ -1,4 +1,4 @@
-FROM {{additional["image-name"]["hive"]}}
+FROM {{additional["image-name"]["hadoop"]}}
 
 ENV HUE_HOME=/usr/share/hue
 
