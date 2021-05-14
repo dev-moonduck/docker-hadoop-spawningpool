@@ -90,3 +90,24 @@ def decompress_tarball(args):
                 f.extractall(tar_dest.parent)
             shutil.move(os.path.join(tar_dest.parent, "spark-{SPARK_VERSION}-bin-spark".format(
                 SPARK_VERSION=args.spark_version)), tar_dest)
+
+    if args.presto or args.all:
+        tar_dest = Path(os.path.join(BASE_PATH, TARGET_DIR, "presto", "presto-bin"))
+        if not tar_dest.exists():
+            tarball = "presto-server-{PRESTO_VERSION}.tar.gz".format(PRESTO_VERSION=args.presto_version)
+            tar_path = Path(os.path.join(BASE_PATH, TARGET_DIR, "presto", tarball))
+            with tarfile.open(tar_path) as f:
+                f.extractall(tar_dest.parent)
+            shutil.move(os.path.join(tar_dest.parent, "presto-server-{PRESTO_VERSION}".format(
+                PRESTO_VERSION=args.presto_version)), tar_dest)
+
+    if args.presto_spark or args.all:
+        tar_dest = Path(os.path.join(BASE_PATH, TARGET_DIR, "presto", "presto-spark-bin"))
+        if not tar_dest.exists():
+            tarball = "presto-spark-package-{PRESTO_VERSION}.tar.gz".format(PRESTO_VERSION=args.presto_version)
+            tar_path = Path(os.path.join(BASE_PATH, TARGET_DIR, "presto", tarball))
+            with tarfile.open(tar_path) as f:
+                f.extractall(tar_dest.parent)
+            shutil.move(os.path.join(tar_dest.parent, "presto-spark-{PRESTO_VERSION}-bin".format(
+                PRESTO_VERSION=args.presto_version)), tar_dest)
+

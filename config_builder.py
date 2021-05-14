@@ -79,7 +79,10 @@ def _component_to_build(args):
         component_name.append("spark-thrift")
     if args.spark_history or args.all:
         component_name.append("spark-history")
+    if args.presto or args.all:
+        component_name.append("presto")
     return component_name
+
 
 def _additional_config(args):
     config = {
@@ -137,6 +140,12 @@ def _component_hosts(args):
     if args.hue or args.all:
         hosts["hue"] = {"host": "hue", "port": "8888", "db-host": "cluster-db", "db-port": "5432"}
 
+    if args.presto or args.all:
+        hosts["presto-coordinator"] = {"host": "presto-coordinator", "port": "8080"}
+        hosts["presto-worker"] = {
+            "host": ["presto-worker1", "presto-worker2", "presto-worker1"]
+        }
+
     return hosts
 
 
@@ -152,6 +161,8 @@ def _component_versions(args):
         version["hue"] = args.hue_version
     if args.spark_history or args.spark_thrift or args.all:
         version["spark"] = args.spark_version
+    if args.presto or args.presto_spark or args.all:
+        version["presto"] = args.presto_version
     return version
 
 
@@ -170,6 +181,8 @@ def _instances(args):
         all_instances["datanode" + str(i)] = {
             "hosts": ["datanode" + str(i)],
             "components": ["datanode"],
+            "environment": set(),
+            "volumes": [],
             "image": args.image_name_hadoop,
             "ports": [str(external_port) + ":9864"]  # 9865, 9866, ...
         }
@@ -226,6 +239,30 @@ def _instances(args):
                 "cpus": "1"
             }
         }
+
+    if args.presto or args.all:
+        instance_to_run = "secondary-namenode"
+        all_instances[instance_to_run]["hosts"] += ["presto-coordinator"]
+        all_instances[instance_to_run]["components"] += ["presto-coordinator"]
+        all_instances[instance_to_run]["ports"] += ["8080:8080"]
+        all_instances[instance_to_run]["environment"].add("PRESTO_HOME=/opt/presto".format(
+            PRESTO_VERSION=args.presto_version
+        ))
+        all_instances[instance_to_run]["volumes"] += [
+            "./presto/presto-bin:/opt/presto",
+            "./presto/scripts:/scripts/run_presto.sh"
+        ]
+        for i in range(1, min(args.num_datanode, 3) + 1): # num of worker is 3 at most
+            instance_to_run = "datanode" + str(i)
+            all_instances[instance_to_run]["hosts"] += ["presto-worker" + str(i)]
+            all_instances[instance_to_run]["components"] += ["presto-worker"]
+            all_instances[instance_to_run]["environment"].add("PRESTO_HOME=/opt/presto".format(
+                PRESTO_VERSION=args.presto_version
+            ))
+            all_instances[instance_to_run]["volumes"] += [
+                "./presto/presto-bin:/opt/presto",
+                "./presto/scripts:/scripts/run_presto.sh"
+            ]
 
     return all_instances
 

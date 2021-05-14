@@ -17,13 +17,15 @@ def parse_arg():
     parser.add_argument("--spark-history", action='store_true', help="download spark and run spark history server")
     parser.add_argument("--spark-thrift", action='store_true', help="download spark and run spark thrift server")
     parser.add_argument("--hue", action='store_true', help="build hue")
-    parser.add_argument("--presto", action='store_true', help="build presto on spark")
+    parser.add_argument("--presto", action='store_true', help="build presto server")
+    parser.add_argument("--presto-spark", action='store_true', help="build presto on spark")
     parser.add_argument("--all", action='store_true', help="Equivalent to --hive --spark --spark-thrift --hue --presto")
 
     parser.add_argument("--force-download-hadoop", action='store_true', help="Always download hadoop")
     parser.add_argument("--force-download-hive", action='store_true', help="Always download hive")
     parser.add_argument("--force-download-spark", action='store_true', help="Always download spark")
     parser.add_argument("--force-download-presto", action='store_true', help="Always download presto")
+    parser.add_argument("--force-download-presto_spark", action='store_true', help="Always download presto on spark")
 
     # Dependency version configs
     parser.add_argument("--hadoop-version", default="3.3.0",
@@ -40,8 +42,6 @@ def parse_arg():
 
     # Docker image name
     parser.add_argument("--image-name-hadoop", default="local-hadoop", help="hadoop docker image name")
-    parser.add_argument("--image-name-hive", default="local-hive", help="hive docker image name")
-    parser.add_argument("--image-name-hue", default="local-hue", help="hue docker image name")
     return parser.parse_args()
 
 

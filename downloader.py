@@ -15,8 +15,12 @@ TO_DOWNLOAD = {
               + "/v{HADOOP_VERSION}/hadoop-{HADOOP_VERSION}.tar.gz",
     "hive": "https://github.com/dev-moonduck/hive/releases/download/v{HIVE_VERSION}"
             + "/apache-hive-{HIVE_VERSION}-bin.tar.gz",
-    "presto": "https://repo1.maven.org/maven2/com/facebook/presto/presto-spark-package"
-              "/{PRESTO_VERSION}/presto-spark-package-{PRESTO_VERSION}.tar.gz"
+    "presto": "https://github.com/dev-moonduck/presto/releases/download/v{PRESTO_VERSION}"
+              "/presto-server-{PRESTO_VERSION}.tar.gz",
+    "presto-spark": "https://github.com/dev-moonduck/presto/releases/download/v{PRESTO_VERSION}"
+              + "/presto-spark-package-{PRESTO_VERSION}.tar.gz",
+    "presto-spark-launcher": "https://github.com/dev-moonduck/presto/releases/download/v{PRESTO_VERSION}"
+                             + "/presto-spark-launcher-{PRESTO_VERSION}.jar"
 }
 
 TARGET_BASE_PATH = str(BASE_PATH) + "/target"
@@ -77,12 +81,27 @@ def download(args):
             TO_DOWNLOAD["spark"].format(HADOOP_VERSION=args.hadoop_version, SCALA_VERSION=args.scala_version,
                                         SPARK_VERSION=args.spark_version), dest))
 
-    dest = DOWNLOAD_LOCATION["presto"] + "/presto-spark-package-{PRESTO_VERSION}.tar.gz".format(
-        PRESTO_VERSION=args.presto_version
-    )
+    if args.presto or args.all:
+        dest = DOWNLOAD_LOCATION["presto"] + "/presto-server-{PRESTO_VERSION}.tar.gz".format(
+            PRESTO_VERSION=args.presto_version
+        )
+        if not Path(dest).exists() or args.force_download_presto:
+            downloader_threads.append(launch_downloader(TO_DOWNLOAD["presto"].format(
+                PRESTO_VERSION=args.presto_version), dest))
 
-    if (args.presto or args.all) and (not Path(dest).exists() or args.force_download_spark):
-        downloader_threads.append(launch_downloader(TO_DOWNLOAD["presto"].format(PRESTO_VERSION=args.presto_version),
-                                                    dest))
+    if args.presto_spark or args.all:
+        dest = DOWNLOAD_LOCATION["presto"] + "/presto-spark-package-{PRESTO_VERSION}.tar.gz".format(
+            PRESTO_VERSION=args.presto_version
+        )
+        if not Path(dest).exists() or args.force_download_presto_spark:
+            downloader_threads.append(launch_downloader(TO_DOWNLOAD["presto-spark"].format(
+                PRESTO_VERSION=args.presto_version), dest))
+        dest = DOWNLOAD_LOCATION["presto"] + "/presto-spark-launcher-{PRESTO_VERSION}.jar".format(
+            PRESTO_VERSION=args.presto_version
+        )
+        if not Path(dest).exists() or args.force_download_presto_spark:
+            downloader_threads.append(launch_downloader(TO_DOWNLOAD["presto-spark-launcher"].format(
+                PRESTO_VERSION=args.presto_version), dest))
+
     for t in downloader_threads:
         t.join()
