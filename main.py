@@ -6,7 +6,12 @@ import utils
 import template
 import docker_compose
 import downloader
+import os
+from pathlib import Path
 
+import component
+
+ROOT_PATH = Path(os.path.abspath(__file__)).parent
 
 def parse_arg() -> Namespace:
     # Todo: Target clean up option
@@ -49,16 +54,19 @@ def parse_arg() -> Namespace:
 def run():
     args = parse_arg()
     try:
-        template_data = config_builder.build_config_from_args(args)
-        downloader.download(args)
-        file_handler.decompress_tarball(args)
-        images_to_build = template_data["components"]
-        file_handler.copy_all_non_templates(images_to_build)
-        file_handler.write_all_templates(images_to_build, template, template_data)
-        file_handler.write_docker_compose(docker_compose.generate_yaml(template_data))
+        hadoop = component.Hadoop(args)
+        print(component.DownloadUtil.download_all([hadoop]))
+
+        # template_data = config_builder.build_config_from_args(args)
+        # downloader.download(args)
+        # file_handler.decompress_tarball(args)
+        # images_to_build = template_data["components"]
+        # file_handler.copy_all_non_templates(images_to_build)
+        # file_handler.write_all_templates(images_to_build, template, template_data)
+        # file_handler.write_docker_compose(docker_compose.generate_yaml(template_data))
     except Exception as e:
         traceback.print_exception()
-        print("Template data: {}".format(template_data))
+        # print("Template data: {}".format(template_data))
         exit(-1)
 
 
