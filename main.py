@@ -1,4 +1,4 @@
-import argparse
+from argparse import ArgumentParser, Namespace
 import config_builder
 import file_handler
 import traceback
@@ -7,9 +7,10 @@ import template
 import docker_compose
 import downloader
 
-def parse_arg():
+
+def parse_arg() -> Namespace:
     # Todo: Target clean up option
-    parser = argparse.ArgumentParser(description="Docker hadoop compose yaml generator")
+    parser = ArgumentParser(description="Docker hadoop compose yaml generator")
     parser.add_argument("--num-datanode", default=1, type=int, help="number of datanode. Default 3")
 
     # Enable/disable components
