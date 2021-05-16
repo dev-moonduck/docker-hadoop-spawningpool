@@ -135,8 +135,18 @@ class DecompressRequired:
     def decompress_async(self) -> list[threading.Thread]:
         awaitables = []
         for compressed, dest in self.files_to_decompress:
-            awaitables.append(threading.Thread(target=self._decompress, args=(compressed, dest)))
+            decompress_func = self._decompress
+            if dest.exists():
+                decompress_func = self._dummy_decompress
+
+            awaitables.append(threading.Thread(target=decompress_func, args=(compressed, dest)))
         return awaitables
+
+    @staticmethod
+    def _dummy_decompress(compressed: Path, dest_path: Path) -> None:
+        print("Decompressing {COMPRESSED} is ignored as {PATH} already exists".format(
+            COMPRESSED=str(compressed), PATH=str(dest_path)))
+        return
 
     @staticmethod
     def _decompress(compressed: Path, dest_path: Path) -> None:
