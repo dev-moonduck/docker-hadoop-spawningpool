@@ -85,30 +85,37 @@ class DownloadProgressBar:
         pass
 
 
-class HasName:
-    def __init__(self, name):
-        self.name = name
+class DownloadRequired(HasComponentBaseDirectory, HasConstants):
+    def __init__(self, force_download: bool):
+        self.force_download = force_download
 
-class DownloadRequired(HasComponentBaseDirectory, HasConstants, HasName):
     def download_async(self) -> list[threading.Thread]:
         Path(self.component_base_dir).mkdir(parents=True, exist_ok=True)
         links = self.links_to_download
         awaitables = []
         for i in range(0, len(links)):
-            awaitables.append(threading.Thread(target=self._download,
-                                               args=(links[i], self.component_base_dir, self.name)))
+            link, output_file = links[i]
+            download_func = self._download
+            if not self.force_download and Path(output_file).exists():
+                download_func = self._dummy_download
+
+            awaitables.append(threading.Thread(target=download_func,
+                                               args=(link, output_file)))
         return awaitables
 
     @staticmethod
-    def _download(url_output_tuple: Tuple[str, str], output_dir: str, name: str) -> None:
-        url, output_file = url_output_tuple
-        print("Downloading from {SOURCE} to {DESTINATION}".format(SOURCE=url, DESTINATION=output_dir))
-        bar = DownloadProgressBar(name)
-        urlretrieve(url, filename=os.path.join(output_dir, output_file),
-                    reporthook=bar.update_to)
+    def _dummy_download(url: str, output_file: Path) -> None:
+        print("Download from {URL} is ignored as {PATH} already exists".format(URL=url, PATH=str(output_file)))
+        return
+
+    @staticmethod
+    def _download(url: str, output_file: Path) -> None:
+        print("Downloading from {SOURCE} to {DESTINATION}".format(SOURCE=url, DESTINATION=output_file))
+        bar = DownloadProgressBar("")
+        urlretrieve(url, filename=output_file, reporthook=bar.update_to)
 
     @property
-    def links_to_download(self) -> list[Tuple[str, str]]:
+    def links_to_download(self) -> list[Tuple[str, Path]]:
         raise NotImplementedError("Base class not implement links_to_download")
 
 
@@ -155,11 +162,14 @@ class DecompressUtil:
             awaitable.join()
 
 
-class Hadoop(FilesCopyRequired, TemplateRequired, DownloadRequired, DecompressRequired):
+class Component:
+    pass
+
+class Hadoop(Component, FilesCopyRequired, TemplateRequired, DownloadRequired, DecompressRequired):
     TAR_FILE_NAME = "hadoop.tar.gz"
 
     def __init__(self, args: Namespace):
-        super().__init__(name="hadoop")
+        DownloadRequired.__init__(self, force_download=args.force_download_hadoop)
         self.hadoop_version = args.hadoop_version
 
     @property
@@ -167,10 +177,11 @@ class Hadoop(FilesCopyRequired, TemplateRequired, DownloadRequired, DecompressRe
         return os.path.join(self.TARGET_BASE_PATH, "hadoop")
 
     @property
-    def links_to_download(self) -> list[str]:
+    def links_to_download(self) -> list[Tuple[str, Path]]:
         return [
             ("https://github.com/dev-moonduck/hadoop/releases/download/v{HADOOP_VERSION}/hadoop-{HADOOP_VERSION}.tar.gz"
-             .format(HADOOP_VERSION=self.hadoop_version), self.TAR_FILE_NAME)
+             .format(HADOOP_VERSION=self.hadoop_version),
+             Path(os.path.join(self.component_base_dir, self.TAR_FILE_NAME)))
         ]
 
     @property
@@ -181,7 +192,7 @@ class Hadoop(FilesCopyRequired, TemplateRequired, DownloadRequired, DecompressRe
         ]
 
 
-class Hive(FilesCopyRequired, TemplateRequired, DownloadRequired):
+class Hive(Component, FilesCopyRequired, TemplateRequired, DownloadRequired):
     TAR_FILE_NAME = "hive.tar.gz"
 
     def __init__(self, args: Namespace):
@@ -193,10 +204,11 @@ class Hive(FilesCopyRequired, TemplateRequired, DownloadRequired):
         return os.path.join(self.TARGET_BASE_PATH, "hive")
 
     @property
-    def links_to_download(self) -> list[str]:
+    def links_to_download(self) -> list[Tuple[str, Path]]:
         return [
             (("https://github.com/dev-moonduck/hive/releases/download/v{HIVE_VERSION}"
-             + "/apache-hive-{HIVE_VERSION}-bin.tar.gz").format(HIVE_VERSION=self.hive_version), "hive.tar.gz")
+             + "/apache-hive-{HIVE_VERSION}-bin.tar.gz").format(HIVE_VERSION=self.hive_version),
+             Path(os.path.join(self.component_base_dir, self.TAR_FILE_NAME)))
         ]
 
     @property
@@ -206,7 +218,7 @@ class Hive(FilesCopyRequired, TemplateRequired, DownloadRequired):
              Path(os.path.join(self.component_base_dir, "hive-bin")))
         ]
 
-class Spark(FilesCopyRequired, TemplateRequired, DownloadRequired):
+class Spark(Component, FilesCopyRequired, TemplateRequired, DownloadRequired):
     TAR_FILE_NAME = "spark.tar.gz"
 
     def __init__(self, args: Namespace):
@@ -220,13 +232,12 @@ class Spark(FilesCopyRequired, TemplateRequired, DownloadRequired):
         return os.path.join(self.TARGET_BASE_PATH, "spark")
 
     @property
-    def links_to_download(self) -> list[str]:
+    def links_to_download(self) -> list[Tuple[str, Path]]:
         return [
             (("https://github.com/dev-moonduck/spark/releases/download/v{SPARK_VERSION}-{SCALA_VERSION}-{HADOOP_VERSION}"
              + "/spark-{SPARK_VERSION}-{SCALA_VERSION}-{HADOOP_VERSION}.tar.gz").format(
                 SPARK_VERSION=self.spark_version, SCALA_VERSION=self.scala_version, HADOOP_VERSION=self.hadoop_version),
-                "spark.tar.gz"
-            )
+                Path(os.path.join(self.component_base_dir, self.TAR_FILE_NAME)))
         ]
 
     @property
@@ -236,9 +247,9 @@ class Spark(FilesCopyRequired, TemplateRequired, DownloadRequired):
              Path(os.path.join(self.component_base_dir, "spark-bin")))
         ]
 
-class Presto(FilesCopyRequired, TemplateRequired, DownloadRequired):
+class Presto(Component, FilesCopyRequired, TemplateRequired, DownloadRequired):
     TAR_FILE_NAME = "presto.tar.gz"
-    
+
     def __init__(self, args: Namespace):
         super().__init__(name="presto")
         self.presto_version = args.presto_version
@@ -248,10 +259,11 @@ class Presto(FilesCopyRequired, TemplateRequired, DownloadRequired):
         return os.path.join(self.TARGET_BASE_PATH, "presto")
 
     @property
-    def links_to_download(self) -> list[str]:
+    def links_to_download(self) -> list[Tuple[str, Path]]:
         return [
             (("https://github.com/dev-moonduck/presto/releases/download/v{PRESTO_VERSION}"
-             + "/presto-server-{PRESTO_VERSION}.tar.gz").format(PRESTO_VERSION=self.presto_version), "presto.tar.gz")
+             + "/presto-server-{PRESTO_VERSION}.tar.gz").format(PRESTO_VERSION=self.presto_version),
+             Path(os.path.join(self.component_base_dir, self.TAR_FILE_NAME)))
         ]
 
     @property
@@ -260,6 +272,8 @@ class Presto(FilesCopyRequired, TemplateRequired, DownloadRequired):
             (Path(os.path.join(self.component_base_dir, self.TAR_FILE_NAME)),
              Path(os.path.join(self.component_base_dir, "presto-bin")))
         ]
+
+
 
 class DockerComponent(PrepareRequired):
     @property
@@ -287,9 +301,10 @@ class DockerComponent(PrepareRequired):
         return self._more_options
 
 
+
 class ComponentFactory:
     @staticmethod
-    def get_components(args: Namespace):
+    def get_components(args: Namespace) -> list[Component]:
         components = [Hadoop(args)]
         # if args.hive or args.all:
         #     components.append(Hive(args))

@@ -55,7 +55,10 @@ def run():
     args = parse_arg()
     try:
         components = component.ComponentFactory.get_components(args)
-        print(component.DecompressUtil().decompress_all(components))
+        to_download = filter(lambda c: isinstance(c, component.DownloadRequired), components)
+        component.DownloadUtil().download_all(components)
+        to_decompress = filter(lambda c: isinstance(c, component.DecompressRequired), components)
+        component.DecompressUtil().decompress_all(to_decompress)
 
         # template_data = config_builder.build_config_from_args(args)
         # downloader.download(args)
