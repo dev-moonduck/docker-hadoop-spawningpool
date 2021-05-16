@@ -5,6 +5,8 @@ import uuid
 import random
 import collections
 from component import DownloadRequired, DecompressRequired, FilesCopyRequired, TemplateRequired
+from pathlib import Path
+from jinja2 import Environment, StrictUndefined
 
 
 class RandomUtil:
@@ -60,8 +62,8 @@ class DecompressUtil:
 
 
 class TemplateUtil:
-    @staticmethod
-    def do_template(hasTemplate: list[TemplateRequired]) -> None:
+    @classmethod
+    def do_template(cls, hasTemplate: list[TemplateRequired]) -> None:
         agg_data = {
             "clusterName": "local_hadoop"
         }
@@ -69,5 +71,25 @@ class TemplateUtil:
         for c in hasTemplate:
             DictUtil.dict_merge(agg_data, c.data)
 
+        engine = cls
         for c in hasTemplate:
-            c.do_template(agg_data)
+            c.do_template(engine, agg_data)
+
+    @classmethod
+    def render(cls, template_path: Path, data: dict) -> str:
+        print("Rendering {}".format(template_path))
+        env = Environment(autoescape=False)
+        env.undefined = StrictUndefined
+        env.filters["keys"] = cls._keys
+        env.filters["values"] = cls._values
+        template = env.from_string(template_path.read_text())
+        return template.render(data)
+
+    @staticmethod
+    def _keys(obj):
+        return obj.keys()
+
+    @staticmethod
+    def _values(obj):
+        return obj.values()
+

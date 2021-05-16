@@ -2,7 +2,6 @@ from __future__ import annotations
 import os
 from pathlib import Path
 import shutil
-import template
 from urllib.request import urlretrieve
 import tarfile
 from typing import Tuple
@@ -55,10 +54,9 @@ class TemplateRequired(HasComponentBaseDirectory, FileDiscoverable, DestinationF
         pattern = "*{EXTENSION}".format(EXTENSION=self.TEMPLATE_EXTENSION)
         return self.discover(dir_to_traverse, pattern)
 
-    def do_template(self, data) -> None:
-
+    def do_template(self, engine, data) -> None:
         for to_template in self.template_files:
-            content = template.render(to_template, data)
+            content = engine.render(to_template, data)
             dest = Path(os.path.splitext(self.get_dest(str(to_template)))[0])
             dest.parent.mkdir(parents=True, exist_ok=True)
             with open(str(dest), "w") as f:
