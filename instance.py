@@ -68,7 +68,7 @@ class DockerInstance:
         raise NotImplementedError()
 
     @property
-    def environment(self) -> list[str]:
+    def environment(self) -> dict:
         raise NotImplementedError()
 
     @property
@@ -99,7 +99,7 @@ class HadoopNode(ABC, DockerInstance):
         ]
 
     @property
-    def environment(self) -> list[str]:
+    def environment(self) -> dict:
         raise NotImplementedError()
 
     @property
@@ -127,24 +127,24 @@ class PrimaryNamenode(HadoopNode):
         ]
 
     @property
-    def environment(self) -> list[str]:
-        raise NotImplementedError()
+    def environment(self) -> dict:
+        return {}
 
     @property
     def ports(self) -> list[str]:
-        raise NotImplementedError()
+        return ["9870:9870"]
 
     @property
     def hosts(self) -> list[str]:
-        raise NotImplementedError()
+        return [self.name]
 
     @property
     def name(self) -> str:
-        raise NotImplementedError()
+        return "primary-namenode"
 
     @property
     def more_options(self) -> dict:
-        raise NotImplementedError()
+        return {}
 
 
 class SecondaryNamenode(HadoopNode):
@@ -155,27 +155,30 @@ class SecondaryNamenode(HadoopNode):
         ]
 
     @property
-    def environment(self) -> list[str]:
-        raise NotImplementedError()
+    def environment(self) -> dict:
+        return {}
 
     @property
     def ports(self) -> list[str]:
-        raise NotImplementedError()
+        return ["9871:9870"]
 
     @property
     def hosts(self) -> list[str]:
-        raise NotImplementedError()
+        return [self.name]
 
     @property
     def name(self) -> str:
-        raise NotImplementedError()
+        return "secondary-namenode"
 
     @property
     def more_options(self) -> dict:
-        raise NotImplementedError()
+        return {}
 
 
 class JournalNode(HadoopNode):
+    def __init__(self, id):
+        self.id = id
+
     @property
     def volumes(self) -> list[str]:
         return super().volumes + [
@@ -184,6 +187,27 @@ class JournalNode(HadoopNode):
             "conf/zoo.cfg:/opt/zookeeper/zoo.cfg"
         ]
 
+    @property
+    def environment(self) -> dict:
+        return {"MY_NODE_NUM": self.id}
+
+    @property
+    def ports(self) -> list[str]:
+        return []
+
+    @property
+    def hosts(self) -> list[str]:
+        return [self.name]
+
+    @property
+    def name(self) -> str:
+        return "journalnode" + str(self.id)
+
+    @property
+    def more_options(self) -> dict:
+        return {}
+
+
 class DataNode(HadoopNode):
     @property
     def volumes(self) -> list[str]:
@@ -191,6 +215,26 @@ class DataNode(HadoopNode):
             "scripts/run_datanode.sh:/scripts/run_datanode.sh",
             "scripts/run_nodemanager.sh:/scripts/run_nodemanager.sh"
         ]
+
+    @property
+    def environment(self) -> dict:
+        return {}
+
+    @property
+    def ports(self) -> list[str]:
+        return []
+
+    @property
+    def hosts(self) -> list[str]:
+        return [self.name]
+
+    @property
+    def name(self) -> str:
+        return "journalnode" + str(self.id)
+
+    @property
+    def more_options(self) -> dict:
+        return {}
 
 class ResourceManager(HadoopNode):
     @property
