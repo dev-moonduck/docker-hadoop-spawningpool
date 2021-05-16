@@ -54,8 +54,8 @@ def parse_arg() -> Namespace:
 def run():
     args = parse_arg()
     try:
-        hadoop = component.Hadoop(args)
-        print(component.DownloadUtil.download_all([hadoop]))
+        components = component.ComponentFactory.get_components(args)
+        print(component.DownloadUtil.download_all(components))
 
         # template_data = config_builder.build_config_from_args(args)
         # downloader.download(args)
