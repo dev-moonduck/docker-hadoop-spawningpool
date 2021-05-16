@@ -273,11 +273,11 @@ class Hive(Component, FilesCopyRequired, TemplateRequired, DownloadRequired, Dec
         }
 
 
-class Spark(Component, FilesCopyRequired, TemplateRequired, DownloadRequired, HasData):
+class Spark(Component, FilesCopyRequired, TemplateRequired, DownloadRequired, DecompressRequired, HasData):
     TAR_FILE_NAME = "spark.tar.gz"
 
     def __init__(self, args: Namespace):
-        super().__init__(name="spark")
+        DownloadRequired.__init__(self, force_download=args.force_download_spark)
         self.spark_version = args.spark_version
         self.scala_version = args.scala_version
         self.hadoop_version = args.hadoop_version
@@ -304,10 +304,27 @@ class Spark(Component, FilesCopyRequired, TemplateRequired, DownloadRequired, Ha
 
     @property
     def data(self) -> dict:
-        return {
-            "spark-history": {"host": "spark-history", "port": "18080"},
-            "spark-thrift": {"host": "spark-thrift", "port": "4040"}
-        }
+        return {}
+
+
+class SparkHistory(Component, FilesCopyRequired, TemplateRequired, HasData):
+    @property
+    def component_base_dir(self) -> str:
+        return os.path.join(self.TARGET_BASE_PATH, "spark-history")
+
+    @property
+    def data(self) -> dict:
+        return {}
+
+
+class SparkThrift(Component, TemplateRequired, HasData):
+    @property
+    def component_base_dir(self) -> str:
+        return os.path.join(self.TARGET_BASE_PATH, "spark-thrift")
+
+    @property
+    def data(self) -> dict:
+        return {}
 
 
 class Presto(Component, FilesCopyRequired, TemplateRequired, DownloadRequired, HasData):
@@ -352,8 +369,13 @@ class ComponentFactory:
         components = [ClusterStarter(), Hadoop(args)]
         if args.hive or args.all:
             components.append(Hive(args))
-        # if args.spark_thrift or args.all:
-        #     components.append(Spark(args))
+        if args.spark_thrift or args.spark_history or args.all:
+            components.append(Spark(args))
+        if args.spark_thrift or args.all:
+            components.append(SparkThrift())
+        if args.spark_history or args.all:
+            components.append(SparkHistory())
+
         # if args.presto or args.all:
         #     components.append(Presto(args))
         return components
