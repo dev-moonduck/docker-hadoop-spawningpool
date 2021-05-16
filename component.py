@@ -58,7 +58,7 @@ class TemplateRequired(HasComponentBaseDirectory, FileDiscoverable, DestinationF
     def do_template(self, data: dict) -> None:
         for to_template in self.template_files:
             content = template.render(to_template, data)
-            dest = self.get_dest(str(to_template))
+            dest = Path(os.path.splitext(self.get_dest(str(to_template)))[0])
             dest.parent.mkdir(parents=True, exist_ok=True)
             with open(str(dest), "w") as f:
                 f.write(content)
