@@ -1,17 +1,7 @@
 from argparse import ArgumentParser, Namespace
-import config_builder
-import file_handler
 import traceback
-import utils
-import template
-import docker_compose
-import downloader
-import os
-from pathlib import Path
-
-import component
-
-ROOT_PATH = Path(os.path.abspath(__file__)).parent
+from component import ComponentFactory, DownloadRequired, FilesCopyRequired, TemplateRequired, DecompressRequired
+from utils import DownloadUtil, TemplateUtil, CopyUtil, DecompressUtil
 
 def parse_arg() -> Namespace:
     # Todo: Target clean up option
@@ -54,16 +44,16 @@ def parse_arg() -> Namespace:
 def run():
     args = parse_arg()
     try:
-        components = component.ComponentFactory.get_components(args)
-        to_download = list(filter(lambda c: isinstance(c, component.DownloadRequired), components))
-        component.DownloadUtil().download_all(components)
-        to_decompress = list(filter(lambda c: isinstance(c, component.DecompressRequired), components))
-        component.DecompressUtil().decompress_all(to_decompress)
-        to_copy = list(filter(lambda c: isinstance(c, component.FilesCopyRequired), components))
-        component.CopyUtil().copy_all(to_copy)
+        components = ComponentFactory.get_components(args)
+        to_download = list(filter(lambda c: isinstance(c, DownloadRequired), components))
+        DownloadUtil().download_all(components)
+        to_decompress = list(filter(lambda c: isinstance(c, DecompressRequired), components))
+        DecompressUtil().decompress_all(to_decompress)
+        to_copy = list(filter(lambda c: isinstance(c, FilesCopyRequired), components))
+        CopyUtil().copy_all(to_copy)
 
-        to_template = list(filter(lambda c: isinstance(c, component.HasTemplate), components))
-        component.TemplateUtil().do_template(to_template)
+        to_template = list(filter(lambda c: isinstance(c, TemplateRequired), components))
+        TemplateUtil().do_template(to_template)
 
         # template_data = config_builder.build_config_from_args(args)
         # downloader.download(args)

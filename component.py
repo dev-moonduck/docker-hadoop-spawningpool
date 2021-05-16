@@ -1,34 +1,34 @@
 from __future__ import annotations
 import os
-import sys
 from pathlib import Path
 import shutil
 import template
-from rich.progress import *
 from urllib.request import urlretrieve
 import tarfile
-from typing import Awaitable, Tuple
+from typing import Tuple
 from argparse import Namespace
-from main import ROOT_PATH
 import threading
+from abc import ABC
 
 
 class HasConstants:
+    ROOT_PATH = Path(os.path.abspath(__file__)).parent
     BASE_PATH = os.path.join(str(ROOT_PATH), "templates")
     TARGET_BASE_PATH = os.path.join(str(ROOT_PATH), "target")
     TEMPLATE_EXTENSION = ".template"
     CLUSTER_NAME = "nameservice"
 
 
-class PrepareRequired(HasConstants):
-    def prepare_required(self) -> None:
-        raise NotImplementedError("Base class not implement prepare_required")
-
-
 class HasComponentBaseDirectory:
     @property
     def component_base_dir(self) -> str:
         raise NotImplementedError("Base class not implement base_dir")
+
+
+class HasData:
+    @property
+    def data(self) -> dict:
+        raise NotImplementedError("Base class not implement data")
 
 
 class FileDiscoverable:
@@ -41,7 +41,7 @@ class FileDiscoverable:
         return paths
 
 
-class DestinationFigurable:
+class DestinationFigurable(HasConstants):
     def get_dest(self, src: str) -> Path:
         relative_path = src[len(self.BASE_PATH):]
         return Path(self.TARGET_BASE_PATH + relative_path)
@@ -55,7 +55,8 @@ class TemplateRequired(HasComponentBaseDirectory, FileDiscoverable, DestinationF
         pattern = "*{EXTENSION}".format(EXTENSION=self.TEMPLATE_EXTENSION)
         return self.discover(dir_to_traverse, pattern)
 
-    def do_template(self, data: dict) -> None:
+    def do_template(self, data) -> None:
+
         for to_template in self.template_files:
             content = template.render(to_template, data)
             dest = Path(os.path.splitext(self.get_dest(str(to_template)))[0])
@@ -64,7 +65,7 @@ class TemplateRequired(HasComponentBaseDirectory, FileDiscoverable, DestinationF
                 f.write(content)
 
 
-class FilesCopyRequired(HasComponentBaseDirectory, HasConstants, FileDiscoverable, DestinationFigurable):
+class FilesCopyRequired(ABC, HasComponentBaseDirectory, FileDiscoverable, DestinationFigurable):
     @property
     def files_to_copy(self) -> list[Path]:
         dir_to_traverse = os.path.join(self.BASE_PATH, Path(self.component_base_dir).name)
@@ -76,19 +77,6 @@ class FilesCopyRequired(HasComponentBaseDirectory, HasConstants, FileDiscoverabl
             dest = self.get_dest(str(to_copy))
             dest.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(to_copy, dest)
-
-class CopyUtil:
-    @staticmethod
-    def copy_all(copiables: list[FilesCopyRequired]):
-        for copiable in copiables:
-            copiable.copy()
-
-class DownloadProgressBar:
-    def __init__(self, desc: str):
-        pass
-
-    def update_to(self, b=1, bsize=1, tsize=None):
-        pass
 
 
 class DownloadRequired(HasComponentBaseDirectory, HasConstants):
@@ -117,25 +105,12 @@ class DownloadRequired(HasComponentBaseDirectory, HasConstants):
     @staticmethod
     def _download(url: str, output_file: Path) -> None:
         print("Downloading from {SOURCE} to {DESTINATION}".format(SOURCE=url, DESTINATION=output_file))
-        bar = DownloadProgressBar("")
-        urlretrieve(url, filename=output_file, reporthook=bar.update_to)
+        urlretrieve(url, filename=output_file)
 
     @property
     def links_to_download(self) -> list[Tuple[str, Path]]:
         raise NotImplementedError("Base class not implement links_to_download")
 
-
-class DownloadUtil:
-    @staticmethod
-    def download_all(downloadables: list[DownloadRequired]):
-        awaitables = []
-        for downloadable in downloadables:
-            new_awaitables = downloadable.download_async()
-            for awaitable in new_awaitables:
-                awaitable.start()
-            awaitables += new_awaitables
-        for awaitable in awaitables:
-            awaitable.join()
 
 class DecompressRequired:
     def decompress_async(self) -> list[threading.Thread]:
@@ -165,54 +140,11 @@ class DecompressRequired:
         raise NotImplementedError("Base class not implement decompress")
 
 
-class DecompressUtil:
-    def decompress_all(self, decompressables: list[DecompressRequired]) -> None:
-        awaitables = []
-        for decompressable in decompressables:
-            new_awaitables = decompressable.decompress_async()
-            for awaitable in new_awaitables:
-                awaitable.start()
-            awaitables += new_awaitables
-
-        for awaitable in awaitables:
-            awaitable.join()
-
-
-class Component:
+class Component(ABC):
     pass
 
-class HasData:
-    @property
-    def data(self) -> dict:
-        raise NotImplementedError("HasData not implement data")
 
-
-import collections
-
-def dict_merge(dct, merge_dct):
-    for k, v in merge_dct.items():
-        if (k in dct and isinstance(dct[k], dict)
-                and isinstance(merge_dct[k], collections.Mapping)):
-            dict_merge(dct[k], merge_dct[k])
-        else:
-            dct[k] = merge_dct[k]
-
-class HasTemplate(TemplateRequired, HasData):
-    pass
-
-class TemplateUtil:
-    def do_template(self, hasTemplate: list[HasTemplate]) -> None:
-        agg_data = {
-            "clusterName": "local_hadoop"
-        }
-        for c in hasTemplate:
-            dict_merge(agg_data, c.data)
-
-        for c in hasTemplate:
-            c.do_template(agg_data)
-
-
-class Hadoop(Component, FilesCopyRequired, HasTemplate, DownloadRequired, DecompressRequired):
+class Hadoop(Component, FilesCopyRequired, TemplateRequired, DownloadRequired, DecompressRequired, HasData):
     TAR_FILE_NAME = "hadoop.tar.gz"
     PREDEF_GROUPS = {
         "admin": 150, "hadoop": 151, "hadoopsvc": 152, "usersvc": 154, "dataplatform_user": 155
@@ -281,12 +213,15 @@ class Hadoop(Component, FilesCopyRequired, HasTemplate, DownloadRequired, Decomp
                 "users": self.PREDEF_USERS, "groups": self.PREDEF_GROUPS,
                 "dependency-versions": {
                     "hadoop": self.hadoop_version, "java": self.java_version
+                },
+                "agent": {
+                    "port": "3333"
                 }
             }
         }
 
 
-class Hive(Component, FilesCopyRequired, HasTemplate, DownloadRequired):
+class Hive(Component, FilesCopyRequired, TemplateRequired, DownloadRequired, HasData):
     TAR_FILE_NAME = "hive.tar.gz"
 
     def __init__(self, args: Namespace):
@@ -328,7 +263,7 @@ class Hive(Component, FilesCopyRequired, HasTemplate, DownloadRequired):
         }
 
 
-class Spark(Component, FilesCopyRequired, HasTemplate, DownloadRequired):
+class Spark(Component, FilesCopyRequired, TemplateRequired, DownloadRequired, HasData):
     TAR_FILE_NAME = "spark.tar.gz"
 
     def __init__(self, args: Namespace):
@@ -343,11 +278,11 @@ class Spark(Component, FilesCopyRequired, HasTemplate, DownloadRequired):
 
     @property
     def links_to_download(self) -> list[Tuple[str, Path]]:
-        return [
-            (("https://github.com/dev-moonduck/spark/releases/download/v{SPARK_VERSION}-{SCALA_VERSION}-{HADOOP_VERSION}"
+        return [(
+            ("https://github.com/dev-moonduck/spark/releases/download/v{SPARK_VERSION}-{SCALA_VERSION}-{HADOOP_VERSION}"
              + "/spark-{SPARK_VERSION}-{SCALA_VERSION}-{HADOOP_VERSION}.tar.gz").format(
                 SPARK_VERSION=self.spark_version, SCALA_VERSION=self.scala_version, HADOOP_VERSION=self.hadoop_version),
-                Path(os.path.join(self.component_base_dir, self.TAR_FILE_NAME)))
+            Path(os.path.join(self.component_base_dir, self.TAR_FILE_NAME)))
         ]
 
     @property
@@ -365,7 +300,7 @@ class Spark(Component, FilesCopyRequired, HasTemplate, DownloadRequired):
         }
 
 
-class Presto(Component, FilesCopyRequired, HasTemplate, DownloadRequired):
+class Presto(Component, FilesCopyRequired, TemplateRequired, DownloadRequired, HasData):
     TAR_FILE_NAME = "presto.tar.gz"
 
     def __init__(self, args: Namespace):
@@ -399,33 +334,6 @@ class Presto(Component, FilesCopyRequired, HasTemplate, DownloadRequired):
                 "host": ["presto-worker1", "presto-worker2", "presto-worker1"]
             }
         }
-
-
-class DockerComponent(PrepareRequired):
-    @property
-    def volumes(self) -> list[str]:
-        return self._volumes
-
-    @property
-    def environment(self) -> list[str]:
-        return self._environment
-
-    @property
-    def ports(self) -> list[str]:
-        return self._ports
-
-    @property
-    def hosts(self) -> list[str]:
-        return self._hosts
-
-    @property
-    def name(self) -> str:
-        return self._name
-
-    @property
-    def more_options(self) -> dict:
-        return self._more_options
-
 
 
 class ComponentFactory:

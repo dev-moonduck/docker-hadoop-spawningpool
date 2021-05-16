@@ -1,4 +1,5 @@
 from component import Component
+from abc import ABC
 
 
 class Instance:
@@ -58,3 +59,149 @@ class Instance:
     @property
     def more_options(self):
         return self._more_options
+
+
+
+class DockerInstance:
+    @property
+    def volumes(self) -> list[str]:
+        raise NotImplementedError()
+
+    @property
+    def environment(self) -> list[str]:
+        raise NotImplementedError()
+
+    @property
+    def ports(self) -> list[str]:
+        raise NotImplementedError()
+
+    @property
+    def hosts(self) -> list[str]:
+        raise NotImplementedError()
+
+    @property
+    def name(self) -> str:
+        raise NotImplementedError()
+
+    @property
+    def more_options(self) -> dict:
+        raise NotImplementedError()
+
+
+class HadoopNode(ABC, DockerInstance):
+    @property
+    def volumes(self) -> list[str]:
+        return [
+            "hadoop/hadoop-bin:/opt/hadoop",
+            "scripts/agent.py:/scripts/agent.py",
+            "scripts/entrypoint.sh:/scripts/entrypoint.sh",
+            "scripts/initialize.sh:/scripts/initialize.sh"
+        ]
+
+    @property
+    def environment(self) -> list[str]:
+        raise NotImplementedError()
+
+    @property
+    def ports(self) -> list[str]:
+        raise NotImplementedError()
+
+    @property
+    def hosts(self) -> list[str]:
+        raise NotImplementedError()
+
+    @property
+    def name(self) -> str:
+        raise NotImplementedError()
+
+    @property
+    def more_options(self) -> dict:
+        raise NotImplementedError()
+
+
+class PrimaryNamenode(HadoopNode):
+    @property
+    def volumes(self) -> list[str]:
+        return super().volumes + [
+            "scripts/run_active_nn.sh:/scripts/run_active_nn.sh"
+        ]
+
+    @property
+    def environment(self) -> list[str]:
+        raise NotImplementedError()
+
+    @property
+    def ports(self) -> list[str]:
+        raise NotImplementedError()
+
+    @property
+    def hosts(self) -> list[str]:
+        raise NotImplementedError()
+
+    @property
+    def name(self) -> str:
+        raise NotImplementedError()
+
+    @property
+    def more_options(self) -> dict:
+        raise NotImplementedError()
+
+
+class SecondaryNamenode(HadoopNode):
+    @property
+    def volumes(self) -> list[str]:
+        return super().volumes + [
+            "scripts/run_standby_nn.sh:/scripts/run_standby_nn.sh"
+        ]
+
+    @property
+    def environment(self) -> list[str]:
+        raise NotImplementedError()
+
+    @property
+    def ports(self) -> list[str]:
+        raise NotImplementedError()
+
+    @property
+    def hosts(self) -> list[str]:
+        raise NotImplementedError()
+
+    @property
+    def name(self) -> str:
+        raise NotImplementedError()
+
+    @property
+    def more_options(self) -> dict:
+        raise NotImplementedError()
+
+
+class JournalNode(HadoopNode):
+    @property
+    def volumes(self) -> list[str]:
+        return super().volumes + [
+            "scripts/run_journal.sh:/scripts/run_journal.sh",
+            "scripts/run_zookeeper.sh:/scripts/run_zookeeper.sh",
+            "conf/zoo.cfg:/opt/zookeeper/zoo.cfg"
+        ]
+
+class DataNode(HadoopNode):
+    @property
+    def volumes(self) -> list[str]:
+        return super().volumes + [
+            "scripts/run_datanode.sh:/scripts/run_datanode.sh",
+            "scripts/run_nodemanager.sh:/scripts/run_nodemanager.sh"
+        ]
+
+class ResourceManager(HadoopNode):
+    @property
+    def volumes(self) -> list[str]:
+        return super().volumes + [
+           "scripts/run_rm.sh:/scripts/run_rm.sh"
+        ]
+
+class YarnHistoryServer(HadoopNode):
+    @property
+    def volumes(self) -> list[str]:
+        return super().volumes + [
+            "scripts/run_yarn_hs.sh:/scripts/run_yarn_hs.sh"
+        ]

@@ -14,6 +14,6 @@ for script in `ls $EXTRA_CONFIG_PATH/* 2> /dev/null`; do
     /bin/bash $script
 done
 
-python3 /scripts/agent.py /scripts 3333 &
+python3 /scripts/agent.py /scripts {{additional["agent"]["port"]}} &
 
 exec "$@"

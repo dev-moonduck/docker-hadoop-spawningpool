@@ -90,7 +90,7 @@
   </property>
   <property>
     <name>yarn.application.classpath</name>
-    <value>/etc/hadoop:/opt/hadoop-{{additional["dependency-versions"]["hadoop"]}}/share/hadoop/common/lib/*:/opt/hadoop-{{additional["dependency-versions"]["hadoop"]}}/share/hadoop/common/*:/opt/hadoop-{{additional["dependency-versions"]["hadoop"]}}/share/hadoop/hdfs:/opt/hadoop-{{additional["dependency-versions"]["hadoop"]}}/share/hadoop/hdfs/lib/*:/opt/hadoop-{{additional["dependency-versions"]["hadoop"]}}/share/hadoop/hdfs/*:/opt/hadoop-{{additional["dependency-versions"]["hadoop"]}}/share/hadoop/mapreduce/*:/opt/hadoop-{{additional["dependency-versions"]["hadoop"]}}/share/hadoop/yarn:/opt/hadoop-{{additional["dependency-versions"]["hadoop"]}}/share/hadoop/yarn/lib/*:/opt/hadoop-{{additional["dependency-versions"]["hadoop"]}}/share/hadoop/yarn/*</value>
+    <value>/etc/hadoop:/opt/hadoop/share/hadoop/common/lib/*:/opt/hadoop/share/hadoop/common/*:/opt/hadoop/share/hadoop/hdfs:/opt/hadoop/share/hadoop/hdfs/lib/*:/opt/hadoop/share/hadoop/hdfs/*:/opt/hadoop/share/hadoop/mapreduce/*:/opt/hadoop/share/hadoop/yarn:/opt/hadoop/share/hadoop/yarn/lib/*:/opt/hadoop/share/hadoop/yarn/*</value>
   </property>
   <property>
     <name>yarn.timeline-service.leveldb-timeline-store.path</name>

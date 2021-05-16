@@ -4,7 +4,7 @@ MAINTAINER Mun Duk Hyun <dev.moonduck@gmail.com>
 
 # Install dependencies
 ENV ZOOKEEPER_HOME=/opt/zookeeper
-ENV HADOOP_HOME=/opt/hadoop-{{additional["dependency-versions"]["hadoop"]}}
+ENV HADOOP_HOME=/opt/hadoop
 ENV HADOOP_CONF_DIR=$HADOOP_HOME/etc/hadoop
 ENV PATH=$HADOOP_HOME/bin/:$PATH
 
@@ -22,7 +22,7 @@ RUN apt update && DEBIAN_FRONTEND=noninteractive apt install -y --no-install-rec
 
 # Zookeeper
 COPY --from=zookeeper:3.6.2 /apache-zookeeper-3.6.2-bin $ZOOKEEPER_HOME
-COPY ./conf/zoo.cfg $ZOOKEEPER_HOME/conf/zoo.cfg
+#COPY ./conf/zoo.cfg $ZOOKEEPER_HOME/conf/zoo.cfg
 
 # Define linux user and groups for hadoop users
 RUN {% for name, gid in additional["groups"].items() -%}
@@ -32,10 +32,10 @@ RUN {% for name, gid in additional["groups"].items() -%}
 {% endfor -%}
 
 COPY scripts/ /scripts/
-COPY ./conf/core-site.xml $HADOOP_CONF_DIR/core-site.xml
-COPY ./conf/hdfs-site.xml $HADOOP_CONF_DIR/hdfs-site.xml
-COPY ./conf/yarn-site.xml $HADOOP_CONF_DIR/yarn-site.xml
-COPY ./conf/mapred-site.xml $HADOOP_CONF_DIR/mapred-site.xml
+#COPY ./conf/core-site.xml $HADOOP_CONF_DIR/core-site.xml
+#COPY ./conf/hdfs-site.xml $HADOOP_CONF_DIR/hdfs-site.xml
+#COPY ./conf/yarn-site.xml $HADOOP_CONF_DIR/yarn-site.xml
+#COPY ./conf/mapred-site.xml $HADOOP_CONF_DIR/mapred-site.xml
 
 RUN mkdir -p /hadoop/dfs/name \
     && mkdir -p /hadoop/dfs/data \
