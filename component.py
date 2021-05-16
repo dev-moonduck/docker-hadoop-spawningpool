@@ -58,7 +58,7 @@ class TemplateRequired(HasComponentBaseDirectory, FileDiscoverable, DestinationF
     def do_template(self, data: dict) -> None:
         for to_template in self.template_files:
             content = template.render(to_template, data)
-            dest = self.get_dest(to_template)
+            dest = self.get_dest(str(to_template))
             dest.parent.mkdir(parents=True, exist_ok=True)
             with open(str(dest), "w") as f:
                 f.write(content)
@@ -202,7 +202,9 @@ class HasTemplate(TemplateRequired, HasData):
 
 class TemplateUtil:
     def do_template(self, hasTemplate: list[HasTemplate]) -> None:
-        agg_data = {}
+        agg_data = {
+            "clusterName": "local_hadoop"
+        }
         for c in hasTemplate:
             dict_merge(agg_data, c.data)
 
@@ -233,6 +235,7 @@ class Hadoop(Component, FilesCopyRequired, HasTemplate, DownloadRequired, Decomp
     def __init__(self, args: Namespace):
         DownloadRequired.__init__(self, force_download=args.force_download_hadoop)
         self.hadoop_version = args.hadoop_version
+        self.java_version = args.java_version
         self.num_datanode = args.num_datanode
 
     @property
@@ -257,16 +260,16 @@ class Hadoop(Component, FilesCopyRequired, HasTemplate, DownloadRequired, Decomp
     @property
     def data(self) -> dict:
         return {
-            "primary-namenode": {
+            "primary_namenode": {
                 "host": "primary-namenode", "rpc-port": "9000", "http-port": "9870"
             },
-            "secondary-namenode": {
+            "secondary_namenode": {
                 "host": "secondary-namenode", "rpc-port": "9000", "http-port": "9870"
             },
             "journalnode": {"host": ["journalnode1", "journalnode2", "journalnode3"], "port": "8485"},
             "zookeeper": {"host": ["zookeeper1", "zookeeper2", "zookeeper3"], "port": "2181"},
-            "yarn-history": {"host": "yarn-history", "port": "8188"},
-            "resource-manager": {
+            "yarn_history": {"host": "yarn-history", "port": "8188"},
+            "resource_manager": {
                 "host": "resource-manager", "port": "8032", "web-port": "8088", "resource-tracker-port": "8031",
                 "scheduler-port": "8030"
             },
@@ -274,10 +277,10 @@ class Hadoop(Component, FilesCopyRequired, HasTemplate, DownloadRequired, Decomp
                 "host": list(map(lambda i: "datanode" + str(i), range(1, self.num_datanode + 1))),
                 "rpc-port": "9864", "nodemanager-port": "8042"
             },
-            "additional-data": {
+            "additional": {
                 "users": self.PREDEF_USERS, "groups": self.PREDEF_GROUPS,
-                "dependencyVersions": {
-                    "hadoop": self.hadoop_version
+                "dependency-versions": {
+                    "hadoop": self.hadoop_version, "java": self.java_version
                 }
             }
         }

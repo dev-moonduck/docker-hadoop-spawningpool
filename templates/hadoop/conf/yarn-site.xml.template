@@ -6,7 +6,7 @@
   </property>
   <property>
     <name>yarn.log.server.url</name>
-    <value>http://{{hosts["yarn-history"]["host"]}}:{{hosts["yarn-history"]["port"]}}/applicationhistory/logs/</value>
+    <value>http://{{yarn_history["host"]}}:{{yarn_history["port"]}}/applicationhistory/logs/</value>
   </property>
   <property>
     <name>yarn.resourcemanager.recovery.enabled</name>
@@ -30,23 +30,23 @@
   </property>
   <property>
     <name>yarn.resourcemanager.hostname</name>
-    <value>{{hosts["resource-manager"]["host"]}}</value>
+    <value>{{resource_manager["host"]}}</value>
   </property>
   <property>
     <name>yarn.resourcemanager.address</name>
-    <value>{{hosts["resource-manager"]["host"]}}:{{hosts["resource-manager"]["port"]}}</value>
+    <value>{{resource_manager["host"]}}:{{resource_manager["port"]}}</value>
   </property>
   <property>
     <name>yarn.resourcemanager.webapp.address</name>
-    <value>{{hosts["resource-manager"]["host"]}}:{{hosts["resource-manager"]["web-port"]}}</value>
+    <value>{{resource_manager["host"]}}:{{resource_manager["web-port"]}}</value>
   </property>
   <property>
     <name>yarn.resourcemanager.scheduler.address</name>
-    <value>{{hosts["resource-manager"]["host"]}}:{{hosts["resource-manager"]["scheduler-port"]}}</value>
+    <value>{{resource_manager["host"]}}:{{resource_manager["scheduler-port"]}}</value>
   </property>
   <property>
     <name>yarn.resourcemanager.resource-tracker.address</name>
-    <value>{{hosts["resource-manager"]["host"]}}:{{hosts["resource-manager"]["resource-tracker-port"]}}</value>
+    <value>{{resource_manager["host"]}}:{{resource_manager["resource-tracker-port"]}}</value>
   </property>
   <property>
     <name>yarn.timeline-service.enabled</name>
@@ -58,7 +58,7 @@
   </property>
   <property>
     <name>yarn.timeline-service.hostname</name>
-    <value>{{hosts["yarn-history"]["host"]}}</value>
+    <value>{{yarn_history["host"]}}</value>
   </property>
   <property>
     <name>mapreduce.map.output.compress</name>
@@ -90,7 +90,7 @@
   </property>
   <property>
     <name>yarn.application.classpath</name>
-    <value>/etc/hadoop:/opt/hadoop-{{dependencyVersions["hadoop"]}}/share/hadoop/common/lib/*:/opt/hadoop-{{dependencyVersions["hadoop"]}}/share/hadoop/common/*:/opt/hadoop-{{dependencyVersions["hadoop"]}}/share/hadoop/hdfs:/opt/hadoop-{{dependencyVersions["hadoop"]}}/share/hadoop/hdfs/lib/*:/opt/hadoop-{{dependencyVersions["hadoop"]}}/share/hadoop/hdfs/*:/opt/hadoop-{{dependencyVersions["hadoop"]}}/share/hadoop/mapreduce/*:/opt/hadoop-{{dependencyVersions["hadoop"]}}/share/hadoop/yarn:/opt/hadoop-{{dependencyVersions["hadoop"]}}/share/hadoop/yarn/lib/*:/opt/hadoop-{{dependencyVersions["hadoop"]}}/share/hadoop/yarn/*</value>
+    <value>/etc/hadoop:/opt/hadoop-{{additional["dependency-versions"]["hadoop"]}}/share/hadoop/common/lib/*:/opt/hadoop-{{additional["dependency-versions"]["hadoop"]}}/share/hadoop/common/*:/opt/hadoop-{{additional["dependency-versions"]["hadoop"]}}/share/hadoop/hdfs:/opt/hadoop-{{additional["dependency-versions"]["hadoop"]}}/share/hadoop/hdfs/lib/*:/opt/hadoop-{{additional["dependency-versions"]["hadoop"]}}/share/hadoop/hdfs/*:/opt/hadoop-{{additional["dependency-versions"]["hadoop"]}}/share/hadoop/mapreduce/*:/opt/hadoop-{{additional["dependency-versions"]["hadoop"]}}/share/hadoop/yarn:/opt/hadoop-{{additional["dependency-versions"]["hadoop"]}}/share/hadoop/yarn/lib/*:/opt/hadoop-{{additional["dependency-versions"]["hadoop"]}}/share/hadoop/yarn/*</value>
   </property>
   <property>
     <name>yarn.timeline-service.leveldb-timeline-store.path</name>

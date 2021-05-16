@@ -7,7 +7,7 @@ if [ "$SAFE_MODE_STATUS" = "Safe mode is ON" ]; then
 fi
 
 # create users in hdfs
-USERS={{ "(\"" + (users | keys | join("\" \"")) + "\")" }}
+USERS={{ "(\"" + (additional["users"] | keys | join("\" \"")) + "\")" }}
 for user in "${USERS[@]}"; do
     user_path_in_hdfs="/user/$user"
     path_exist=`hdfs dfs -ls $user_path_in_hdfs`
