@@ -55,12 +55,15 @@ def run():
     args = parse_arg()
     try:
         components = component.ComponentFactory.get_components(args)
-        to_download = filter(lambda c: isinstance(c, component.DownloadRequired), components)
+        to_download = list(filter(lambda c: isinstance(c, component.DownloadRequired), components))
         component.DownloadUtil().download_all(components)
-        to_decompress = filter(lambda c: isinstance(c, component.DecompressRequired), components)
+        to_decompress = list(filter(lambda c: isinstance(c, component.DecompressRequired), components))
         component.DecompressUtil().decompress_all(to_decompress)
-        to_copy = filter(lambda c: isinstance(c, component.FilesCopyRequired), components)
+        to_copy = list(filter(lambda c: isinstance(c, component.FilesCopyRequired), components))
         component.CopyUtil().copy_all(to_copy)
+
+        to_template = list(filter(lambda c: isinstance(c, component.HasTemplate), components))
+        component.TemplateUtil().do_template(to_template)
 
         # template_data = config_builder.build_config_from_args(args)
         # downloader.download(args)

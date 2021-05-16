@@ -36,7 +36,7 @@ class FileDiscoverable:
     def discover(dir_path: str, glob_pattern: str) -> list[Path]:
         paths = []
         for file_or_dir in Path(dir_path).rglob(glob_pattern):
-            if (file_or_dir.is_file()):
+            if file_or_dir.is_file():
                 paths.append(file_or_dir)
         return paths
 
@@ -51,7 +51,7 @@ class TemplateRequired(HasComponentBaseDirectory, FileDiscoverable, DestinationF
 
     @property
     def template_files(self) -> list[Path]:
-        dir_to_traverse = os.join(self.BASE_PATH, self.component_base_dir)
+        dir_to_traverse = os.path.join(self.BASE_PATH, Path(self.component_base_dir).name)
         pattern = "*{EXTENSION}".format(EXTENSION=self.TEMPLATE_EXTENSION)
         return self.discover(dir_to_traverse, pattern)
 
@@ -181,12 +181,59 @@ class DecompressUtil:
 class Component:
     pass
 
-class Hadoop(Component, FilesCopyRequired, TemplateRequired, DownloadRequired, DecompressRequired):
+class HasData:
+    @property
+    def data(self) -> dict:
+        raise NotImplementedError("HasData not implement data")
+
+
+import collections
+
+def dict_merge(dct, merge_dct):
+    for k, v in merge_dct.items():
+        if (k in dct and isinstance(dct[k], dict)
+                and isinstance(merge_dct[k], collections.Mapping)):
+            dict_merge(dct[k], merge_dct[k])
+        else:
+            dct[k] = merge_dct[k]
+
+class HasTemplate(TemplateRequired, HasData):
+    pass
+
+class TemplateUtil:
+    def do_template(self, hasTemplate: list[HasTemplate]) -> None:
+        agg_data = {}
+        for c in hasTemplate:
+            dict_merge(agg_data, c.data)
+
+        for c in hasTemplate:
+            c.do_template(agg_data)
+
+
+class Hadoop(Component, FilesCopyRequired, HasTemplate, DownloadRequired, DecompressRequired):
     TAR_FILE_NAME = "hadoop.tar.gz"
+    PREDEF_GROUPS = {
+        "admin": 150, "hadoop": 151, "hadoopsvc": 152, "usersvc": 154, "dataplatform_user": 155
+    }
+
+    PREDEF_USERS = {
+        "hdfs": {"uid": 180, "groups": ["admin"], "isSvc": True},
+        "webhdfs": {"uid": 181, "groups": ["admin"], "isSvc": True},
+        "hive": {"uid": 182, "groups": ["hadoopsvc"], "isSvc": True},
+        "hue": {"uid": 183, "groups": ["hadoopsvc"], "isSvc": True},
+        "spark": {"uid": 184, "groups": ["hadoopsvc"], "isSvc": True},
+        "bi_user": {"uid": 185, "groups": ["dataplatform_user"], "isSvc": False},
+        "bi_svc": {"uid": 186, "groups": ["usersvc"], "isSvc": True},
+        "ml_user": {"uid": 187, "groups": ["dataplatform_user"], "isSvc": False},
+        "ml_svc": {"uid": 188, "groups": ["usersvc"], "isSvc": True},
+        "de_user": {"uid": 189, "groups": ["dataplatform_user"], "isSvc": False},
+        "de_svc": {"uid": 190, "groups": ["usersvc"], "isSvc": True}
+    }
 
     def __init__(self, args: Namespace):
         DownloadRequired.__init__(self, force_download=args.force_download_hadoop)
         self.hadoop_version = args.hadoop_version
+        self.num_datanode = args.num_datanode
 
     @property
     def component_base_dir(self) -> str:
@@ -207,8 +254,36 @@ class Hadoop(Component, FilesCopyRequired, TemplateRequired, DownloadRequired, D
              Path(os.path.join(self.component_base_dir, "hadoop-bin")))
         ]
 
+    @property
+    def data(self) -> dict:
+        return {
+            "primary-namenode": {
+                "host": "primary-namenode", "rpc-port": "9000", "http-port": "9870"
+            },
+            "secondary-namenode": {
+                "host": "secondary-namenode", "rpc-port": "9000", "http-port": "9870"
+            },
+            "journalnode": {"host": ["journalnode1", "journalnode2", "journalnode3"], "port": "8485"},
+            "zookeeper": {"host": ["zookeeper1", "zookeeper2", "zookeeper3"], "port": "2181"},
+            "yarn-history": {"host": "yarn-history", "port": "8188"},
+            "resource-manager": {
+                "host": "resource-manager", "port": "8032", "web-port": "8088", "resource-tracker-port": "8031",
+                "scheduler-port": "8030"
+            },
+            "datanode": {
+                "host": list(map(lambda i: "datanode" + str(i), range(1, self.num_datanode + 1))),
+                "rpc-port": "9864", "nodemanager-port": "8042"
+            },
+            "additional-data": {
+                "users": self.PREDEF_USERS, "groups": self.PREDEF_GROUPS,
+                "dependencyVersions": {
+                    "hadoop": self.hadoop_version
+                }
+            }
+        }
 
-class Hive(Component, FilesCopyRequired, TemplateRequired, DownloadRequired):
+
+class Hive(Component, FilesCopyRequired, HasTemplate, DownloadRequired):
     TAR_FILE_NAME = "hive.tar.gz"
 
     def __init__(self, args: Namespace):
@@ -234,7 +309,23 @@ class Hive(Component, FilesCopyRequired, TemplateRequired, DownloadRequired):
              Path(os.path.join(self.component_base_dir, "hive-bin")))
         ]
 
-class Spark(Component, FilesCopyRequired, TemplateRequired, DownloadRequired):
+    @property
+    def data(self) -> dict:
+        return {
+            "hive-server": {"host": "hive-server", "thrift-port": "10000", "http-port": "10001"},
+            "hive-metastore": {"host": "hive-metastore", "thrift-port": "9083", "metastore-db-host": "cluster-db",
+                               "metastore-db-port": "5432", "metastore-db-name": "metastore",
+                               "metastore-db-user": "hive", "metastore-db-password": "hive"},
+            "additional-data": {
+                "users": self.PREDEF_USERS, "groups": self.PREDEF_GROUPS,
+                "dependencyVersions": {
+                    "hadoop": self.hadoop_version
+                }
+            }
+        }
+
+
+class Spark(Component, FilesCopyRequired, HasTemplate, DownloadRequired):
     TAR_FILE_NAME = "spark.tar.gz"
 
     def __init__(self, args: Namespace):
@@ -263,7 +354,15 @@ class Spark(Component, FilesCopyRequired, TemplateRequired, DownloadRequired):
              Path(os.path.join(self.component_base_dir, "spark-bin")))
         ]
 
-class Presto(Component, FilesCopyRequired, TemplateRequired, DownloadRequired):
+    @property
+    def data(self) -> dict:
+        return {
+            "spark-history": {"host": "spark-history", "port": "18080"},
+            "spark-thrift": {"host": "spark-thrift", "port": "4040"}
+        }
+
+
+class Presto(Component, FilesCopyRequired, HasTemplate, DownloadRequired):
     TAR_FILE_NAME = "presto.tar.gz"
 
     def __init__(self, args: Namespace):
@@ -289,6 +388,14 @@ class Presto(Component, FilesCopyRequired, TemplateRequired, DownloadRequired):
              Path(os.path.join(self.component_base_dir, "presto-bin")))
         ]
 
+    @property
+    def data(self) -> dict:
+        return {
+            "presto-coordinator": {"host": "presto-coordinator", "port": "8080"},
+            "presto-worker": {
+                "host": ["presto-worker1", "presto-worker2", "presto-worker1"]
+            }
+        }
 
 
 class DockerComponent(PrepareRequired):
