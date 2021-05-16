@@ -36,14 +36,15 @@ class FileDiscoverable:
     def discover(dir_path: str, glob_pattern: str) -> list[Path]:
         paths = []
         for file_or_dir in Path(dir_path).rglob(glob_pattern):
-            paths.append(file_or_dir)
+            if (file_or_dir.is_file()):
+                paths.append(file_or_dir)
         return paths
 
 
 class DestinationFigurable:
     def get_dest(self, src: str) -> Path:
-        relative_path = src[0: len(self.BASE_PATH)]
-        return Path(os.path.join(self.TARGET_BASE_PATH, relative_path))
+        relative_path = src[len(self.BASE_PATH):]
+        return Path(self.TARGET_BASE_PATH + relative_path)
 
 
 class TemplateRequired(HasComponentBaseDirectory, FileDiscoverable, DestinationFigurable):
@@ -66,7 +67,7 @@ class TemplateRequired(HasComponentBaseDirectory, FileDiscoverable, DestinationF
 class FilesCopyRequired(HasComponentBaseDirectory, HasConstants, FileDiscoverable, DestinationFigurable):
     @property
     def files_to_copy(self) -> list[Path]:
-        dir_to_traverse = os.join(self.BASE_PATH, self.component_base_dir)
+        dir_to_traverse = os.path.join(self.BASE_PATH, Path(self.component_base_dir).name)
         pattern = "*[!{EXTENSION}]".format(EXTENSION=self.TEMPLATE_EXTENSION)
         return self.discover(dir_to_traverse, pattern)
 
@@ -76,6 +77,11 @@ class FilesCopyRequired(HasComponentBaseDirectory, HasConstants, FileDiscoverabl
             dest.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(to_copy, dest)
 
+class CopyUtil:
+    @staticmethod
+    def copy_all(copiables: list[FilesCopyRequired]):
+        for copiable in copiables:
+            copiable.copy()
 
 class DownloadProgressBar:
     def __init__(self, desc: str):

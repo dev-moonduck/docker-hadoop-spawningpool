@@ -59,6 +59,8 @@ def run():
         component.DownloadUtil().download_all(components)
         to_decompress = filter(lambda c: isinstance(c, component.DecompressRequired), components)
         component.DecompressUtil().decompress_all(to_decompress)
+        to_copy = filter(lambda c: isinstance(c, component.FilesCopyRequired), components)
+        component.CopyUtil().copy_all(to_copy)
 
         # template_data = config_builder.build_config_from_args(args)
         # downloader.download(args)
