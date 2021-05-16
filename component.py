@@ -331,7 +331,7 @@ class Presto(Component, FilesCopyRequired, TemplateRequired, DownloadRequired, H
     TAR_FILE_NAME = "presto.tar.gz"
 
     def __init__(self, args: Namespace):
-        super().__init__(name="presto")
+        DownloadRequired.__init__(self, force_download=args.force_download_presto)
         self.presto_version = args.presto_version
 
     @property
@@ -356,8 +356,8 @@ class Presto(Component, FilesCopyRequired, TemplateRequired, DownloadRequired, H
     @property
     def data(self) -> dict:
         return {
-            "presto-coordinator": {"host": "presto-coordinator", "port": "8080"},
-            "presto-worker": {
+            "presto_coordinator": {"host": "presto-coordinator", "port": "8080"},
+            "presto_worker": {
                 "host": ["presto-worker1", "presto-worker2", "presto-worker1"]
             }
         }
@@ -375,7 +375,6 @@ class ComponentFactory:
             components.append(SparkThrift())
         if args.spark_history or args.all:
             components.append(SparkHistory())
-
-        # if args.presto or args.all:
-        #     components.append(Presto(args))
+        if args.presto or args.all:
+            components.append(Presto(args))
         return components
