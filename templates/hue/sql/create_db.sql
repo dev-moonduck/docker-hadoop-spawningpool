@@ -1,3 +1,3 @@
-CREATE USER hue WITH PASSWORD 'hue';
-CREATE DATABASE hue OWNER hue;
-GRANT ALL PRIVILEGES ON DATABASE hue TO hue;
+CREATE USER {{hue["db-user"]}} WITH PASSWORD '{{hue["db-password"]}}';
+CREATE DATABASE hue OWNER {{hue["db-user"]}};
+GRANT ALL PRIVILEGES ON DATABASE {{hue["db-name"]}} TO hue["db-user"];

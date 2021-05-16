@@ -148,6 +148,19 @@ class ClusterStarter(Component, FilesCopyRequired, TemplateRequired, HasData):
         return {}
 
 
+class Hue(Component, FilesCopyRequired, TemplateRequired, HasData):
+    @property
+    def component_base_dir(self) -> str:
+        return os.path.join(self.TARGET_BASE_PATH, "hue")
+
+    @property
+    def data(self) -> dict:
+        return {
+            "hue": {
+                "db-user": "hue", "db-password": "hue", "db-name": "hue", "db-host": "cluster-db", "db-port": "5432"
+            }
+        }
+
 class Hadoop(Component, FilesCopyRequired, TemplateRequired, DownloadRequired, DecompressRequired, HasData):
     TAR_FILE_NAME = "hadoop.tar.gz"
     PREDEF_GROUPS = {
@@ -370,4 +383,6 @@ class ComponentFactory:
             components.append(SparkHistory())
         if args.presto or args.all:
             components.append(Presto(args))
+        if args.hue or args.all:
+            components.append(Hue())
         return components

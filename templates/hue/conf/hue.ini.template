@@ -642,16 +642,16 @@
     # Note for Oracle, you can use the Oracle Service Name by setting "host=" and "port=" and then "name=<host>:<port>/<service_name>".
     # Note for MariaDB use the 'mysql' engine.
     engine=postgresql_psycopg2
-    host={{hosts["hue"]["db-host"]}}
-    port={{hosts["hue"]["db-port"]}}
-    user={{additional["hue"]["db-username"]}}
-    password={{additional["hue"]["db-password"]}}
+    host={{hue["db-host"]}}
+    port={{hue["db-port"]}}
+    user={{hue["db-user"]}}
+    password={{hue["db-password"]}}
     # conn_max_age option to make database connection persistent value in seconds
     # https://docs.djangoproject.com/en/1.11/ref/databases/#persistent-connections
     ## conn_max_age=0
     # Execute this script to produce the database password. This will be used when 'password' is not set.
     ## password_script=/path/script
-    name={{additional["hue"]["hue-db-name"]}}
+    name={{hue["db-name"]}}
     ## options={}
     # Database schema, to be used only when public schema is revoked in postgres
     ## schema=public
@@ -1137,7 +1137,7 @@
       # Use WebHdfs/HttpFs as the communication mechanism.
       # Domain should be the NameNode or HttpFs host.
       # Default port is 14000 for HttpFs.
-      webhdfs_url=http://{{clusterName}}:{{hosts["primary-namenode"]["http-port"]}}/webhdfs/v1
+      webhdfs_url=http://{{clusterName}}:{{primary_namenode["http-port"]}}/webhdfs/v1
 
       # Change this if your HDFS cluster is Kerberos-secured
       ## security_enabled=false
@@ -1158,7 +1158,7 @@
 
     [[[default]]]
       # Enter the host on which you are running the ResourceManager
-      resourcemanager_host={{hosts["resource-manager"]["host"]}}
+      resourcemanager_host={{resource_manager["host"]}}
 
       # The port where the ResourceManager IPC listens on
       ## resourcemanager_port=8032
@@ -1173,13 +1173,13 @@
       ## security_enabled=false
 
       # URL of the ResourceManager API
-      resourcemanager_api_url=http://{{hosts["resource-manager"]["host"]}}:{{hosts["resource-manager"]["port"]}}
+      resourcemanager_api_url=http://{{resource_manager["host"]}}:{{resource_manager["port"]}}
 
       # URL of the ProxyServer API
       ## proxy_api_url=http://localhost:8088
 
       # URL of the HistoryServer API
-      history_server_api_url=http://{{hosts["yarn-history"]["host"]}}:{{hosts["yarn-history"]["port"]}}
+      history_server_api_url=http://{{yarn_history["host"]}}:{{yarn_history["port"]}}
 
       # URL of the Spark History Server
       ## spark_history_server_url=http://localhost:18088
@@ -1216,13 +1216,13 @@
 
   # Host where HiveServer2 is running.
   # If Kerberos security is enabled, use fully-qualified domain name (FQDN).
-  hive_server_host={{hosts["hive-server"]["host"]}}
+  hive_server_host={{hive_server["host"]}}
 
   # Binary thrift port for HiveServer2.
-  hive_server_port={{hosts["hive-server"]["thrift-port"]}}
+  hive_server_port={{hive_server["thrift-port"]}}
 
   # Http thrift port for HiveServer2.
-  hive_server_http_port={{hosts["hive-server"]["http-port"]}}
+  hive_server_http_port={{hive_server["http-port"]}}
 
   # Host where LLAP is running
   ## llap_server_host = localhost
@@ -1263,10 +1263,10 @@
 
   # Host where Hive Metastore Server (HMS) is running.
   # If Kerberos security is enabled, the fully-qualified domain name (FQDN) is required.
-  hive_metastore_host={{hosts["hive-metastore"]["thrift-port"]}}
+  hive_metastore_host={{hive_metastore["thrift-port"]}}
 
   # Configure the port the Hive Metastore Server runs on.
-  ## hive_metastore_port={{hosts["hive-metastore"]["thrift-port"]}}
+  ## hive_metastore_port={{hive_metastore["thrift-port"]}}
 
   # Hive configuration directory, where hive-site.xml is located
   hive_conf_dir=/opt/hive/conf
