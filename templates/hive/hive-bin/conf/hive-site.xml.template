@@ -2,7 +2,7 @@
 <configuration>
     <property>
         <name>javax.jdo.option.ConnectionURL</name>
-        <value>jdbc:postgresql://{{hosts["hive-metastore"]["metastore-db-host"]}}:{{hosts["hive-metastore"]["metastore-db-port"]}}/{{additional["hive-metastore"]["metastore-db-name"]}}</value>
+        <value>jdbc:postgresql://{{hive_metastore["metastore-db-host"]}}:{{hive_metastore["metastore-db-port"]}}/{{hive_metastore["metastore-db-name"]}}</value>
     </property>
     <property>
         <name>javax.jdo.option.ConnectionDriverName</name>
@@ -22,15 +22,15 @@
     </property>
     <property>
         <name>hive.metastore.uris</name>
-        <value>thrift://{{hosts["hive-metastore"]["host"]}}:{{hosts["hive-metastore"]["thrift-port"]}}</value>
+        <value>thrift://{{hive_metastore["host"]}}:{{hive_metastore["thrift-port"]}}</value>
     </property>
     <property>
         <name>hive.server2.thrift.port</name>
-        <value>{{hosts["hive-server"]["thrift-port"]}}</value>
+        <value>{{hive_server["thrift-port"]}}</value>
     </property>
     <property>
         <name>hive.server2.thrift.http.port</name>
-        <value>{{hosts["hive-server"]["http-port"]}}</value>
+        <value>{{hive_server["http-port"]}}</value>
     </property>
     <property>
         <name>hive.metastore.event.db.notification.api.auth</name>

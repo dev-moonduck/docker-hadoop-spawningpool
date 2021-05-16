@@ -232,11 +232,11 @@ class Hadoop(Component, FilesCopyRequired, TemplateRequired, DownloadRequired, D
         }
 
 
-class Hive(Component, FilesCopyRequired, TemplateRequired, DownloadRequired, HasData):
+class Hive(Component, FilesCopyRequired, TemplateRequired, DownloadRequired, DecompressRequired, HasData):
     TAR_FILE_NAME = "hive.tar.gz"
 
     def __init__(self, args: Namespace):
-        super().__init__(name="hive")
+        DownloadRequired.__init__(self, force_download=args.force_download_hive)
         self.hive_version = args.hive_version
 
     @property
@@ -247,7 +247,7 @@ class Hive(Component, FilesCopyRequired, TemplateRequired, DownloadRequired, Has
     def links_to_download(self) -> list[Tuple[str, Path]]:
         return [
             (("https://github.com/dev-moonduck/hive/releases/download/v{HIVE_VERSION}"
-             + "/apache-hive-{HIVE_VERSION}-bin.tar.gz").format(HIVE_VERSION=self.hive_version),
+             + "/apache-hive-{HIVE_VERSION}.tar.gz").format(HIVE_VERSION=self.hive_version),
              Path(os.path.join(self.component_base_dir, self.TAR_FILE_NAME)))
         ]
 
@@ -261,14 +261,13 @@ class Hive(Component, FilesCopyRequired, TemplateRequired, DownloadRequired, Has
     @property
     def data(self) -> dict:
         return {
-            "hive-server": {"host": "hive-server", "thrift-port": "10000", "http-port": "10001"},
-            "hive-metastore": {"host": "hive-metastore", "thrift-port": "9083", "metastore-db-host": "cluster-db",
+            "hive_server": {"host": "hive-server", "thrift-port": "10000", "http-port": "10001"},
+            "hive_metastore": {"host": "hive-metastore", "thrift-port": "9083", "metastore-db-host": "cluster-db",
                                "metastore-db-port": "5432", "metastore-db-name": "metastore",
                                "metastore-db-user": "hive", "metastore-db-password": "hive"},
-            "additional-data": {
-                "users": self.PREDEF_USERS, "groups": self.PREDEF_GROUPS,
-                "dependencyVersions": {
-                    "hadoop": self.hadoop_version
+            "additional": {
+                "dependency-versions": {
+                    "hive": self.hive_version
                 }
             }
         }
@@ -351,8 +350,8 @@ class ComponentFactory:
     @staticmethod
     def get_components(args: Namespace) -> list[Component]:
         components = [ClusterStarter(), Hadoop(args)]
-        # if args.hive or args.all:
-        #     components.append(Hive(args))
+        if args.hive or args.all:
+            components.append(Hive(args))
         # if args.spark_thrift or args.all:
         #     components.append(Spark(args))
         # if args.presto or args.all:
