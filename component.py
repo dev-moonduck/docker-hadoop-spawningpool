@@ -8,13 +8,14 @@ from typing import Tuple
 from argparse import Namespace
 import threading
 from abc import ABC
+import re
 
 
 class HasConstants:
     ROOT_PATH = Path(os.path.abspath(__file__)).parent
     BASE_PATH = os.path.join(str(ROOT_PATH), "templates")
     TARGET_BASE_PATH = os.path.join(str(ROOT_PATH), "target")
-    TEMPLATE_EXTENSION = ".template"
+    TEMPLATE_EXTENSION = "template"
     CLUSTER_NAME = "nameservice"
 
 
@@ -32,10 +33,11 @@ class HasData:
 
 class FileDiscoverable:
     @staticmethod
-    def discover(dir_path: str, glob_pattern: str) -> list[Path]:
+    def discover(dir_path: str, regex_pattern: str) -> list[Path]:
         paths = []
-        for file_or_dir in Path(dir_path).rglob(glob_pattern):
-            if file_or_dir.is_file():
+        pattern = re.compile(regex_pattern)
+        for file_or_dir in Path(dir_path).rglob("*"):
+            if file_or_dir.is_file() and pattern.match(str(file_or_dir.name)):
                 paths.append(file_or_dir)
         return paths
 
@@ -51,7 +53,7 @@ class TemplateRequired(HasComponentBaseDirectory, FileDiscoverable, DestinationF
     @property
     def template_files(self) -> list[Path]:
         dir_to_traverse = os.path.join(self.BASE_PATH, Path(self.component_base_dir).name)
-        pattern = "*{EXTENSION}".format(EXTENSION=self.TEMPLATE_EXTENSION)
+        pattern = ".*\\.{EXTENSION}$".format(EXTENSION=self.TEMPLATE_EXTENSION)
         return self.discover(dir_to_traverse, pattern)
 
     def do_template(self, engine, data) -> None:
@@ -67,7 +69,7 @@ class FilesCopyRequired(ABC, HasComponentBaseDirectory, FileDiscoverable, Destin
     @property
     def files_to_copy(self) -> list[Path]:
         dir_to_traverse = os.path.join(self.BASE_PATH, Path(self.component_base_dir).name)
-        pattern = "*[!{EXTENSION}]".format(EXTENSION=self.TEMPLATE_EXTENSION)
+        pattern = "(?!.*\\.{EXTENSION}$)".format(EXTENSION=self.TEMPLATE_EXTENSION)
         return self.discover(dir_to_traverse, pattern)
 
     def copy(self) -> None:
@@ -140,6 +142,17 @@ class DecompressRequired:
 
 class Component(ABC):
     pass
+
+
+class ClusterStarter(Component, FilesCopyRequired, TemplateRequired, HasData):
+
+    @property
+    def component_base_dir(self) -> str:
+        return os.path.join(self.TARGET_BASE_PATH, "cluster-starter")
+
+    @property
+    def data(self) -> dict:
+        return {}
 
 
 class Hadoop(Component, FilesCopyRequired, TemplateRequired, DownloadRequired, DecompressRequired, HasData):
@@ -337,7 +350,7 @@ class Presto(Component, FilesCopyRequired, TemplateRequired, DownloadRequired, H
 class ComponentFactory:
     @staticmethod
     def get_components(args: Namespace) -> list[Component]:
-        components = [Hadoop(args)]
+        components = [ClusterStarter(), Hadoop(args)]
         # if args.hive or args.all:
         #     components.append(Hive(args))
         # if args.spark_thrift or args.all:

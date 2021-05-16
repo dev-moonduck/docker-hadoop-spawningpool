@@ -46,7 +46,7 @@ def run():
     try:
         components = ComponentFactory.get_components(args)
         to_download = list(filter(lambda c: isinstance(c, DownloadRequired), components))
-        DownloadUtil().download_all(components)
+        DownloadUtil().download_all(to_download)
         to_decompress = list(filter(lambda c: isinstance(c, DecompressRequired), components))
         DecompressUtil().decompress_all(to_decompress)
         to_copy = list(filter(lambda c: isinstance(c, FilesCopyRequired), components))
