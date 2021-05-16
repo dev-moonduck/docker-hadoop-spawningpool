@@ -125,14 +125,15 @@ class DownloadUtil:
             awaitable.join()
 
 class DecompressRequired:
-    def decompress(self):
+    def decompress_async(self) -> list[threading.Thread]:
         awaitables = []
         for compressed, dest in self.files_to_decompress:
-            awaitables.append(self._decompress(compressed, dest))
+            awaitables.append(threading.Thread(target=self._decompress, args=(compressed, dest)))
         return awaitables
 
     @staticmethod
-    async def _decompress(compressed: Path, dest_path: Path) -> None:
+    def _decompress(compressed: Path, dest_path: Path) -> None:
+        dest_path.mkdir(parents=True, exist_ok=True)
         with tarfile.open(Path(compressed)) as f:
             f.extractall(dest_path)
 
@@ -142,19 +143,21 @@ class DecompressRequired:
 
 
 class DecompressUtil:
-    def download_all(self, decompressables: list[DecompressRequired]) -> None:
+    def decompress_all(self, decompressables: list[DecompressRequired]) -> None:
         awaitables = []
         for decompressable in decompressables:
-            new_awaitables = decompressable.decompress()
+            new_awaitables = decompressable.decompress_async()
+            for awaitable in new_awaitables:
+                awaitable.start()
             awaitables += new_awaitables
 
-        loop = asyncio.get_event_loop()
         for awaitable in awaitables:
-            loop.run_until_complete(awaitable)
-        loop.close()
+            awaitable.join()
 
 
-class Hadoop(FilesCopyRequired, TemplateRequired, DownloadRequired):
+class Hadoop(FilesCopyRequired, TemplateRequired, DownloadRequired, DecompressRequired):
+    TAR_FILE_NAME = "hadoop.tar.gz"
+
     def __init__(self, args: Namespace):
         super().__init__(name="hadoop")
         self.hadoop_version = args.hadoop_version
@@ -167,11 +170,20 @@ class Hadoop(FilesCopyRequired, TemplateRequired, DownloadRequired):
     def links_to_download(self) -> list[str]:
         return [
             ("https://github.com/dev-moonduck/hadoop/releases/download/v{HADOOP_VERSION}/hadoop-{HADOOP_VERSION}.tar.gz"
-            .format(HADOOP_VERSION=self.hadoop_version), "hadoop.tar.gz")
+             .format(HADOOP_VERSION=self.hadoop_version), self.TAR_FILE_NAME)
+        ]
+
+    @property
+    def files_to_decompress(self) -> list[Tuple[Path, Path]]:
+        return [
+            (Path(os.path.join(self.component_base_dir, self.TAR_FILE_NAME)),
+             Path(os.path.join(self.component_base_dir, "hadoop-bin")))
         ]
 
 
 class Hive(FilesCopyRequired, TemplateRequired, DownloadRequired):
+    TAR_FILE_NAME = "hive.tar.gz"
+
     def __init__(self, args: Namespace):
         super().__init__(name="hive")
         self.hive_version = args.hive_version
@@ -187,7 +199,16 @@ class Hive(FilesCopyRequired, TemplateRequired, DownloadRequired):
              + "/apache-hive-{HIVE_VERSION}-bin.tar.gz").format(HIVE_VERSION=self.hive_version), "hive.tar.gz")
         ]
 
+    @property
+    def files_to_decompress(self) -> list[Tuple[Path, Path]]:
+        return [
+            (Path(os.path.join(self.component_base_dir, self.TAR_FILE_NAME)),
+             Path(os.path.join(self.component_base_dir, "hive-bin")))
+        ]
+
 class Spark(FilesCopyRequired, TemplateRequired, DownloadRequired):
+    TAR_FILE_NAME = "spark.tar.gz"
+
     def __init__(self, args: Namespace):
         super().__init__(name="spark")
         self.spark_version = args.spark_version
@@ -208,7 +229,16 @@ class Spark(FilesCopyRequired, TemplateRequired, DownloadRequired):
             )
         ]
 
+    @property
+    def files_to_decompress(self) -> list[Tuple[Path, Path]]:
+        return [
+            (Path(os.path.join(self.component_base_dir, self.TAR_FILE_NAME)),
+             Path(os.path.join(self.component_base_dir, "spark-bin")))
+        ]
+
 class Presto(FilesCopyRequired, TemplateRequired, DownloadRequired):
+    TAR_FILE_NAME = "presto.tar.gz"
+    
     def __init__(self, args: Namespace):
         super().__init__(name="presto")
         self.presto_version = args.presto_version
@@ -222,6 +252,13 @@ class Presto(FilesCopyRequired, TemplateRequired, DownloadRequired):
         return [
             (("https://github.com/dev-moonduck/presto/releases/download/v{PRESTO_VERSION}"
              + "/presto-server-{PRESTO_VERSION}.tar.gz").format(PRESTO_VERSION=self.presto_version), "presto.tar.gz")
+        ]
+
+    @property
+    def files_to_decompress(self) -> list[Tuple[Path, Path]]:
+        return [
+            (Path(os.path.join(self.component_base_dir, self.TAR_FILE_NAME)),
+             Path(os.path.join(self.component_base_dir, "presto-bin")))
         ]
 
 class DockerComponent(PrepareRequired):
@@ -254,10 +291,10 @@ class ComponentFactory:
     @staticmethod
     def get_components(args: Namespace):
         components = [Hadoop(args)]
-        if args.hive or args.all:
-            components.append(Hive(args))
-        if args.spark_thrift or args.all:
-            components.append(Spark(args))
-        if args.presto or args.all:
-            components.append(Presto(args))
+        # if args.hive or args.all:
+        #     components.append(Hive(args))
+        # if args.spark_thrift or args.all:
+        #     components.append(Spark(args))
+        # if args.presto or args.all:
+        #     components.append(Presto(args))
         return components
