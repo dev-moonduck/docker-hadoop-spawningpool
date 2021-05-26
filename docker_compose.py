@@ -6,6 +6,11 @@ except ImportError:
     from yaml import Dumper
 import copy
 from collections import OrderedDict
+from instance import DockerComponent, MultipleComponent, PrimaryNamenode, SecondaryNamenode, JournalNode, DataNode, \
+    ResourceManager, YarnHistoryServer
+from argparse import Namespace
+from typing import List
+
 
 
 DOCKER_COMPOSE_YAML = OrderedDict({
@@ -32,54 +37,66 @@ yaml.add_representer(OrderedDict, lambda self, data:  self.represent_mapping('ta
                      Dumper=Dumper)
 
 
-def generate_yaml(data):
+def generate_yaml(instances: List[DockerComponent]):
     compose_yaml = copy.deepcopy(DOCKER_COMPOSE_YAML)
-    for name, instance in data["instances"].items():
+    for instance in instances:
         instance_conf = {
-            "image": instance["image"],
-            "container_name": name,
+            "image": instance.image,
+            "container_name": instance.name,
             "networks": {
                 "hadoop.net": None
             },
             "tty": True
         }
-        if "ports" in instance and instance["ports"]:
-            instance_conf["ports"] = instance["ports"]
+        if getattr(instance, "ports") and instance.ports:
+            instance_conf["ports"] = instance.ports
 
-        if "hosts" in instance and instance["hosts"]:
-            instance_conf["networks"]["hadoop.net"] = { "aliases": instance["hosts"] }
+        if getattr(instance, "hosts") and instance.hosts:
+            instance_conf["networks"]["hadoop.net"] = {"aliases": instance.hosts}
 
-        if "volumes" in instance and instance["volumes"]:
-            instance_conf["volumes"] = instance["volumes"]
+        if getattr(instance, "volumes") and instance.volumes:
+            instance_conf["volumes"] = instance.volumes
 
-        if "environment" in instance and instance["environment"]:
-            instance_conf["environment"] = list(instance["environment"])
+        if getattr(instance, "environment") and instance.environment:
+            instance_conf["environment"] = instance.environment
 
-        if "additional" in instance:
-            for k, v in instance["additional"].items():
+        if getattr(instance, "more_options") and instance.more_options:
+            for k, v in instance.more_options.items():
                 instance_conf[k] = v
 
-        compose_yaml["services"][name] = instance_conf
-    if "hive-metastore" in data["hosts"] or "hue" in data["hosts"]:
-        compose_yaml["services"]["cluster-db"] = {
-            "image": "postgres:13.1",
-            "container_name": "cluster-db",
-            "restart": "always",
-            "environment": {
-                "POSTGRES_PASSWORD": "postgres",
-                "POSTGRES_HOST_AUTH_METHOD": "trust"
-            },
-            "networks": ["hadoop.net"],
-            "ports": ["5432:5432"],
-            "volumes": []
-        }
-        if "hive-metastore" in data["hosts"]:
-            compose_yaml["services"]["cluster-db"]["volumes"].append(
-                "./hive/sql/create_db.sql:/docker-entrypoint-initdb.d/create_hive_db.sql"
-            )
-        if "hue" in data["hosts"]:
-            compose_yaml["services"]["cluster-db"]["volumes"].append(
-                "./hue/sql/create_db.sql:/docker-entrypoint-initdb.d/create_hue_db.sql"
-            )
+        compose_yaml["services"][instance.name] = instance_conf
+    # if "hive-metastore" in data["hosts"] or "hue" in data["hosts"]:
+    #     compose_yaml["services"]["cluster-db"] = {
+    #         "image": "postgres:13.1",
+    #         "container_name": "cluster-db",
+    #         "restart": "always",
+    #         "environment": {
+    #             "POSTGRES_PASSWORD": "postgres",
+    #             "POSTGRES_HOST_AUTH_METHOD": "trust"
+    #         },
+    #         "networks": ["hadoop.net"],
+    #         "ports": ["5432:5432"],
+    #         "volumes": []
+    #     }
+    #     if "hive-metastore" in data["hosts"]:
+    #         compose_yaml["services"]["cluster-db"]["volumes"].append(
+    #             "./hive/sql/create_db.sql:/docker-entrypoint-initdb.d/create_hive_db.sql"
+    #         )
+    #     if "hue" in data["hosts"]:
+    #         compose_yaml["services"]["cluster-db"]["volumes"].append(
+    #             "./hue/sql/create_db.sql:/docker-entrypoint-initdb.d/create_hue_db.sql"
+    #         )
 
     return dump(compose_yaml, Dumper=Dumper)
+
+
+def build_components(args: Namespace) -> List[DockerComponent]:
+    primary_nn = [PrimaryNamenode(), JournalNode(1), YarnHistoryServer()]
+    secondary_nn = [SecondaryNamenode(), JournalNode(2), ResourceManager()]
+    datanode1 = [DataNode(1), JournalNode(3)]
+
+    return [
+        MultipleComponent("primary-namenode", primary_nn),
+        MultipleComponent("secondary-namenode", secondary_nn),
+        MultipleComponent("datanode1", datanode1)
+    ]

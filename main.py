@@ -2,6 +2,8 @@ from argparse import ArgumentParser, Namespace
 import traceback
 from component import ComponentFactory, DownloadRequired, FilesCopyRequired, TemplateRequired, DecompressRequired
 from utils import DownloadUtil, TemplateUtil, CopyUtil, DecompressUtil
+from docker_compose import build_components, generate_yaml
+
 
 def parse_arg() -> Namespace:
     # Todo: Target clean up option
@@ -54,6 +56,7 @@ def run():
 
         to_template = list(filter(lambda c: isinstance(c, TemplateRequired), components))
         TemplateUtil().do_template(to_template)
+        print(generate_yaml(build_components(args)))
 
         # template_data = config_builder.build_config_from_args(args)
         # downloader.download(args)

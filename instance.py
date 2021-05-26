@@ -1,4 +1,5 @@
 from abc import ABC
+from typing import List, Dict, Set
 
 
 class DockerComponent:
@@ -7,19 +8,19 @@ class DockerComponent:
         raise NotImplementedError()
 
     @property
-    def volumes(self) -> list[str]:
+    def volumes(self) -> Set[str]:
         raise NotImplementedError()
 
     @property
-    def environment(self) -> dict:
+    def environment(self) -> Dict[str, str]:
         raise NotImplementedError()
 
     @property
-    def ports(self) -> list[str]:
+    def ports(self) -> Set[str]:
         raise NotImplementedError()
 
     @property
-    def hosts(self) -> list[str]:
+    def hosts(self) -> Set[str]:
         raise NotImplementedError()
 
     @property
@@ -32,47 +33,53 @@ class DockerComponent:
 
 
 class MultipleComponent(DockerComponent):
-    def __init__(self, name: str, components: list[DockerComponent]):
-        self._image = None
-        self._volumes = []
-        self._environment = {}
-        self._ports = []
-        self._hosts = []
-        self._name = name
-        self._more_options = {}
+    def __init__(self, name: str, components: List[DockerComponent]):
+        image = None
+        volumes = set()
+        environment = {}
+        ports = set()
+        hosts = set()
+        more_options = {}
 
         for component in components:
-            if not self._image:
-                self._image = component.image
+            if not image:
+                image = component.image
             if component.volumes:
-                self._volumes += component.volumes
+                volumes = volumes.union(component.volumes)
             if component.environment:
-                self._environment.update(component.environment)
+                environment.update(component.environment)
             if component.ports:
-                self._ports += component.ports
+                ports = ports.union(component.ports)
             if component.hosts:
-                self._hosts += component.hosts
+                hosts = hosts.union(component.hosts)
             if component.more_options:
-                self._more_options.update(component.more_options)
+                more_options.update(component.more_options)
+        self._image = image
+        self._volumes = list(volumes)
+        self._environment = environment
+        self._ports = list(ports)
+        self._hosts = list(hosts)
+        self._more_options = more_options
+        self._name = name
 
     @property
     def image(self) -> str:
         return self._image
 
     @property
-    def volumes(self) -> list[str]:
+    def volumes(self) -> Set[str]:
         return self._volumes
 
     @property
-    def environment(self) -> dict[str, str]:
+    def environment(self) -> Dict[str, str]:
         return self._environment
 
     @property
-    def ports(self) -> list[str]:
+    def ports(self) -> Set[str]:
         return self._ports
 
     @property
-    def hosts(self) -> list[str]:
+    def hosts(self) -> Set[str]:
         return self._hosts
 
     @property
@@ -90,20 +97,20 @@ class ClusterStater(DockerComponent):
         return "cluster-starter"
 
     @property
-    def volumes(self) -> list[str]:
-        return []
+    def volumes(self) -> Set[str]:
+        return set()
 
     @property
-    def environment(self) -> dict[str, str]:
+    def environment(self) -> Dict[str, str]:
         return {}
 
     @property
-    def ports(self) -> list[str]:
-        return []
+    def ports(self) -> Set[str]:
+        return set()
 
     @property
-    def hosts(self) -> list[str]:
-        return [self.name]
+    def hosts(self) -> Set[str]:
+        return set([self.name])
 
     @property
     def name(self) -> str:
@@ -120,26 +127,26 @@ class ClusterDb(DockerComponent):
         return "postgres:13.1"
 
     @property
-    def volumes(self) -> list[str]:
-        return [
+    def volumes(self) -> Set[str]:
+        return {
             "hive/sql/create_db.sql:/docker-entrypoint-initdb.d/create_hive_db.sql",
             "hue/sql/create_db.sql:/docker-entrypoint-initdb.d/create_hue_db.sql"
-        ]
+        }
 
     @property
-    def environment(self) -> dict[str, str]:
+    def environment(self) -> Dict[str, str]:
         return {
             "POSTGRES_HOST_AUTH_METHOD": "trust",
             "POSTGRES_PASSWORD": "postgres"
         }
 
     @property
-    def ports(self) -> list[str]:
-        return ["5432:5432"]
+    def ports(self) -> Set[str]:
+        return set(["5432:5432"])
 
     @property
-    def hosts(self) -> list[str]:
-        return [self.name]
+    def hosts(self) -> Set[str]:
+        return set([self.name])
 
     @property
     def name(self) -> str:
@@ -156,25 +163,25 @@ class Hue(DockerComponent):
         return "gethue/hue:4.9.0"
 
     @property
-    def volumes(self) -> list[str]:
-        return [
+    def volumes(self) -> Set[str]:
+        return {
             "hue/conf/hue.ini:/usr/share/hue/desktop/conf/hue.ini",
             "hue/conf/log.conf:/usr/share/hue/desktop/conf/log.conf"
-        ]
+        }
 
     @property
-    def environment(self) -> dict[str, str]:
+    def environment(self) -> Dict[str, str]:
         return {
             "HUE_HOME": "/usr/share/hue"
         }
 
     @property
-    def ports(self) -> list[str]:
-        return ["8888:8888"]
+    def ports(self) -> Set[str]:
+        return set(["8888:8888"])
 
     @property
-    def hosts(self) -> list[str]:
-        return [self.name]
+    def hosts(self) -> Set[str]:
+        return set([self.name])
 
     @property
     def name(self) -> str:
@@ -193,24 +200,24 @@ class HadoopNode(ABC, DockerComponent):
         return "local-hadoop"
 
     @property
-    def volumes(self) -> list[str]:
-        return [
+    def volumes(self) -> Set[str]:
+        return {
             "hadoop/hadoop-bin:/opt/hadoop",
             "scripts/agent.py:/scripts/agent.py",
             "scripts/entrypoint.sh:/scripts/entrypoint.sh",
             "scripts/initialize.sh:/scripts/initialize.sh"
-        ]
+        }
 
     @property
-    def environment(self) -> dict[str, str]:
+    def environment(self) -> Dict[str, str]:
         raise NotImplementedError()
 
     @property
-    def ports(self) -> list[str]:
+    def ports(self) -> Set[str]:
         raise NotImplementedError()
 
     @property
-    def hosts(self) -> list[str]:
+    def hosts(self) -> Set[str]:
         raise NotImplementedError()
 
     @property
@@ -224,22 +231,23 @@ class HadoopNode(ABC, DockerComponent):
 
 class PrimaryNamenode(HadoopNode):
     @property
-    def volumes(self) -> list[str]:
-        return super().volumes + [
+    def volumes(self) -> Set[str]:
+        super().volumes.union({
             "scripts/run_active_nn.sh:/scripts/run_active_nn.sh"
-        ]
+        })
+        return super().volumes
 
     @property
-    def environment(self) -> dict[str, str]:
+    def environment(self) -> Dict[str, str]:
         return {}
 
     @property
-    def ports(self) -> list[str]:
-        return ["9870:9870"]
+    def ports(self) -> Set[str]:
+        return {"9870:9870"}
 
     @property
-    def hosts(self) -> list[str]:
-        return [self.name]
+    def hosts(self) -> Set[str]:
+        return {self.name}
 
     @property
     def name(self) -> str:
@@ -252,22 +260,22 @@ class PrimaryNamenode(HadoopNode):
 
 class SecondaryNamenode(HadoopNode):
     @property
-    def volumes(self) -> list[str]:
-        return super().volumes + [
+    def volumes(self) -> Set[str]:
+        return super().volumes.union({
             "scripts/run_standby_nn.sh:/scripts/run_standby_nn.sh"
-        ]
+        })
 
     @property
-    def environment(self) -> dict[str, str]:
+    def environment(self) -> Dict[str, str]:
         return {}
 
     @property
-    def ports(self) -> list[str]:
-        return ["9871:9870"]
+    def ports(self) -> Set[str]:
+        return {"9871:9870"}
 
     @property
-    def hosts(self) -> list[str]:
-        return [self.name]
+    def hosts(self) -> Set[str]:
+        return {self.name}
 
     @property
     def name(self) -> str:
@@ -283,24 +291,24 @@ class JournalNode(HadoopNode):
         self.id = id
 
     @property
-    def volumes(self) -> list[str]:
-        return super().volumes + [
+    def volumes(self) -> Set[str]:
+        return super().volumes.union({
             "scripts/run_journal.sh:/scripts/run_journal.sh",
             "scripts/run_zookeeper.sh:/scripts/run_zookeeper.sh",
             "conf/zoo.cfg:/opt/zookeeper/zoo.cfg"
-        ]
+        })
 
     @property
-    def environment(self) -> dict[str, str]:
+    def environment(self) -> Dict[str, str]:
         return {"MY_NODE_NUM": self.id}
 
     @property
-    def ports(self) -> list[str]:
-        return []
+    def ports(self) -> Set[str]:
+        return set()
 
     @property
-    def hosts(self) -> list[str]:
-        return [self.name]
+    def hosts(self) -> Set[str]:
+        return {self.name}
 
     @property
     def name(self) -> str:
@@ -316,23 +324,23 @@ class DataNode(HadoopNode):
         self.id = id
 
     @property
-    def volumes(self) -> list[str]:
-        return super().volumes + [
+    def volumes(self) -> Set[str]:
+        return super().volumes.union({
             "scripts/run_datanode.sh:/scripts/run_datanode.sh",
             "scripts/run_nodemanager.sh:/scripts/run_nodemanager.sh"
-        ]
+        })
 
     @property
-    def environment(self) -> dict[str, str]:
+    def environment(self) -> Dict[str, str]:
         return {}
 
     @property
-    def ports(self) -> list[str]:
-        return [str(9864 + self.id - 1) + ":9864"]
+    def ports(self) -> Set[str]:
+        return {str(9864 + self.id - 1) + ":9864"}
 
     @property
-    def hosts(self) -> list[str]:
-        return [self.name]
+    def hosts(self) -> Set[str]:
+        return {self.name}
 
     @property
     def name(self) -> str:
@@ -345,22 +353,22 @@ class DataNode(HadoopNode):
 
 class ResourceManager(HadoopNode):
     @property
-    def volumes(self) -> list[str]:
-        return super().volumes + [
+    def volumes(self) -> Set[str]:
+        return super().volumes.union({
            "scripts/run_rm.sh:/scripts/run_rm.sh"
-        ]
+        })
 
     @property
-    def environment(self) -> dict[str, str]:
+    def environment(self) -> Dict[str, str]:
         return {}
 
     @property
-    def ports(self) -> list[str]:
-        return ["8088:8088"]
+    def ports(self) -> Set[str]:
+        return {"8088:8088"}
 
     @property
-    def hosts(self) -> list[str]:
-        return [self.name]
+    def hosts(self) -> Set[str]:
+        return {self.name}
 
     @property
     def name(self) -> str:
@@ -373,22 +381,22 @@ class ResourceManager(HadoopNode):
 
 class YarnHistoryServer(HadoopNode):
     @property
-    def volumes(self) -> list[str]:
-        return super().volumes + [
+    def volumes(self) -> Set[str]:
+        return super().volumes.union({
             "scripts/run_yarn_hs.sh:/scripts/run_yarn_hs.sh"
-        ]
+        })
 
     @property
-    def environment(self) -> dict[str, str]:
+    def environment(self) -> Dict[str, str]:
         return {}
 
     @property
-    def ports(self) -> list[str]:
-        return ["8188:8188"]
+    def ports(self) -> Set[str]:
+        return {"8188:8188"}
 
     @property
-    def hosts(self) -> list[str]:
-        return [self.name]
+    def hosts(self) -> Set[str]:
+        return {self.name}
 
     @property
     def name(self) -> str:
