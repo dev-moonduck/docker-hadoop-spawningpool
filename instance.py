@@ -1,7 +1,7 @@
 from abc import ABC
 
 
-class DockerInstance:
+class DockerComponent:
     @property
     def image(self) -> str:
         raise NotImplementedError()
@@ -31,7 +31,60 @@ class DockerInstance:
         raise NotImplementedError()
 
 
-class ClusterStater(DockerInstance):
+class MultipleComponent(DockerComponent):
+    def __init__(self, name: str, components: list[DockerComponent]):
+        self._image = None
+        self._volumes = []
+        self._environment = {}
+        self._ports = []
+        self._hosts = []
+        self._name = name
+        self._more_options = {}
+
+        for component in components:
+            if not self._image:
+                self._image = component.image
+            if component.volumes:
+                self._volumes += component.volumes
+            if component.environment:
+                self._environment.update(component.environment)
+            if component.ports:
+                self._ports += component.ports
+            if component.hosts:
+                self._hosts += component.hosts
+            if component.more_options:
+                self._more_options.update(component.more_options)
+
+    @property
+    def image(self) -> str:
+        return self._image
+
+    @property
+    def volumes(self) -> list[str]:
+        return self._volumes
+
+    @property
+    def environment(self) -> dict[str, str]:
+        return self._environment
+
+    @property
+    def ports(self) -> list[str]:
+        return self._ports
+
+    @property
+    def hosts(self) -> list[str]:
+        return self._hosts
+
+    @property
+    def name(self) -> str:
+        return self._name
+
+    @property
+    def more_options(self) -> dict:
+        return self._more_options
+
+
+class ClusterStater(DockerComponent):
     @property
     def image(self) -> str:
         return "cluster-starter"
@@ -41,7 +94,7 @@ class ClusterStater(DockerInstance):
         return []
 
     @property
-    def environment(self) -> dict:
+    def environment(self) -> dict[str, str]:
         return {}
 
     @property
@@ -61,7 +114,7 @@ class ClusterStater(DockerInstance):
         return {}
 
 
-class ClusterDb(DockerInstance):
+class ClusterDb(DockerComponent):
     @property
     def image(self) -> str:
         return "postgres:13.1"
@@ -74,7 +127,7 @@ class ClusterDb(DockerInstance):
         ]
 
     @property
-    def environment(self) -> dict:
+    def environment(self) -> dict[str, str]:
         return {
             "POSTGRES_HOST_AUTH_METHOD": "trust",
             "POSTGRES_PASSWORD": "postgres"
@@ -97,7 +150,7 @@ class ClusterDb(DockerInstance):
         return {}
 
 
-class Hue(DockerInstance):
+class Hue(DockerComponent):
     @property
     def image(self) -> str:
         return "gethue/hue:4.9.0"
@@ -110,7 +163,7 @@ class Hue(DockerInstance):
         ]
 
     @property
-    def environment(self) -> dict:
+    def environment(self) -> dict[str, str]:
         return {
             "HUE_HOME": "/usr/share/hue"
         }
@@ -134,7 +187,7 @@ class Hue(DockerInstance):
         }
 
 
-class HadoopNode(ABC, DockerInstance):
+class HadoopNode(ABC, DockerComponent):
     @property
     def image(self) -> str:
         return "local-hadoop"
@@ -149,7 +202,7 @@ class HadoopNode(ABC, DockerInstance):
         ]
 
     @property
-    def environment(self) -> dict:
+    def environment(self) -> dict[str, str]:
         raise NotImplementedError()
 
     @property
@@ -177,7 +230,7 @@ class PrimaryNamenode(HadoopNode):
         ]
 
     @property
-    def environment(self) -> dict:
+    def environment(self) -> dict[str, str]:
         return {}
 
     @property
@@ -205,7 +258,7 @@ class SecondaryNamenode(HadoopNode):
         ]
 
     @property
-    def environment(self) -> dict:
+    def environment(self) -> dict[str, str]:
         return {}
 
     @property
@@ -238,7 +291,7 @@ class JournalNode(HadoopNode):
         ]
 
     @property
-    def environment(self) -> dict:
+    def environment(self) -> dict[str, str]:
         return {"MY_NODE_NUM": self.id}
 
     @property
@@ -270,7 +323,7 @@ class DataNode(HadoopNode):
         ]
 
     @property
-    def environment(self) -> dict:
+    def environment(self) -> dict[str, str]:
         return {}
 
     @property
@@ -298,7 +351,7 @@ class ResourceManager(HadoopNode):
         ]
 
     @property
-    def environment(self) -> dict:
+    def environment(self) -> dict[str, str]:
         return {}
 
     @property
@@ -326,7 +379,7 @@ class YarnHistoryServer(HadoopNode):
         ]
 
     @property
-    def environment(self) -> dict:
+    def environment(self) -> dict[str, str]:
         return {}
 
     @property
