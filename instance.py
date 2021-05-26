@@ -1,68 +1,11 @@
-from component import Component
 from abc import ABC
 
 
-class Instance:
-    DEFAULT_NETWORK = "hadoop.net"
-
-    def __init__(self, image: str, name: str, components: list[Component]):
-        self._image = image
-        self._container_name = name
-        self._network = {
-            self.DEFAULT_NETWORK: None
-        }
-        self._environment = []
-        self._volumes = []
-        self._ports = []
-        self._more_options = {
-            "tty": True
-        }
-        for c in components:
-            if c.environment:
-                self._environment += c.environment
-            if c.volumes:
-                self._volumes += c.volumes
-            if c.ports:
-                self._ports += c.ports
-            if c.more_options:
-                self._more_options.update(c.more_options)
-            if c.hosts:
-                if not self._network[self.DEFAULT_NETWORK]:
-                    self._network[self.DEFAULT_NETWORK] = { "aliases": [] }
-                cur_hosts = self._network[self.DEFAULT_NETWORK]["aliases"]
-                cur_hosts += c.hosts
-
-    @property
-    def image(self):
-        return self._image
-
-    @property
-    def environment(self):
-        return self._environment
-
-    @property
-    def volumes(self):
-        return self._volumes
-
-    @property
-    def container_name(self):
-        return self._container_name
-
-    @property
-    def networks(self):
-        return self._networks
-
-    @property
-    def ports(self):
-        return self._ports
-
-    @property
-    def more_options(self):
-        return self._more_options
-
-
-
 class DockerInstance:
+    @property
+    def image(self) -> str:
+        raise NotImplementedError()
+
     @property
     def volumes(self) -> list[str]:
         raise NotImplementedError()
@@ -88,7 +31,114 @@ class DockerInstance:
         raise NotImplementedError()
 
 
+class ClusterStater(DockerInstance):
+    @property
+    def image(self) -> str:
+        return "cluster-starter"
+
+    @property
+    def volumes(self) -> list[str]:
+        return []
+
+    @property
+    def environment(self) -> dict:
+        return {}
+
+    @property
+    def ports(self) -> list[str]:
+        return []
+
+    @property
+    def hosts(self) -> list[str]:
+        return [self.name]
+
+    @property
+    def name(self) -> str:
+        return "cluster-starter"
+
+    @property
+    def more_options(self) -> dict:
+        return {}
+
+
+class ClusterDb(DockerInstance):
+    @property
+    def image(self) -> str:
+        return "postgres:13.1"
+
+    @property
+    def volumes(self) -> list[str]:
+        return [
+            "hive/sql/create_db.sql:/docker-entrypoint-initdb.d/create_hive_db.sql",
+            "hue/sql/create_db.sql:/docker-entrypoint-initdb.d/create_hue_db.sql"
+        ]
+
+    @property
+    def environment(self) -> dict:
+        return {
+            "POSTGRES_HOST_AUTH_METHOD": "trust",
+            "POSTGRES_PASSWORD": "postgres"
+        }
+
+    @property
+    def ports(self) -> list[str]:
+        return ["5432:5432"]
+
+    @property
+    def hosts(self) -> list[str]:
+        return [self.name]
+
+    @property
+    def name(self) -> str:
+        return "cluster-db"
+
+    @property
+    def more_options(self) -> dict:
+        return {}
+
+
+class Hue(DockerInstance):
+    @property
+    def image(self) -> str:
+        return "gethue/hue:4.9.0"
+
+    @property
+    def volumes(self) -> list[str]:
+        return [
+            "hue/conf/hue.ini:/usr/share/hue/desktop/conf/hue.ini",
+            "hue/conf/log.conf:/usr/share/hue/desktop/conf/log.conf"
+        ]
+
+    @property
+    def environment(self) -> dict:
+        return {
+            "HUE_HOME": "/usr/share/hue"
+        }
+
+    @property
+    def ports(self) -> list[str]:
+        return ["8888:8888"]
+
+    @property
+    def hosts(self) -> list[str]:
+        return [self.name]
+
+    @property
+    def name(self) -> str:
+        return "hue"
+
+    @property
+    def more_options(self) -> dict:
+        return {
+            "mem_limit": "2g"
+        }
+
+
 class HadoopNode(ABC, DockerInstance):
+    @property
+    def image(self) -> str:
+        return "local-hadoop"
+
     @property
     def volumes(self) -> list[str]:
         return [
@@ -209,6 +259,9 @@ class JournalNode(HadoopNode):
 
 
 class DataNode(HadoopNode):
+    def __init__(self, id):
+        self.id = id
+
     @property
     def volumes(self) -> list[str]:
         return super().volumes + [
@@ -222,7 +275,7 @@ class DataNode(HadoopNode):
 
     @property
     def ports(self) -> list[str]:
-        return []
+        return [str(9864 + self.id - 1) + ":9864"]
 
     @property
     def hosts(self) -> list[str]:
@@ -230,11 +283,12 @@ class DataNode(HadoopNode):
 
     @property
     def name(self) -> str:
-        return "journalnode" + str(self.id)
+        return "datanode" + str(self.id)
 
     @property
     def more_options(self) -> dict:
         return {}
+
 
 class ResourceManager(HadoopNode):
     @property
@@ -243,9 +297,50 @@ class ResourceManager(HadoopNode):
            "scripts/run_rm.sh:/scripts/run_rm.sh"
         ]
 
+    @property
+    def environment(self) -> dict:
+        return {}
+
+    @property
+    def ports(self) -> list[str]:
+        return ["8088:8088"]
+
+    @property
+    def hosts(self) -> list[str]:
+        return [self.name]
+
+    @property
+    def name(self) -> str:
+        return "resource-manager"
+
+    @property
+    def more_options(self) -> dict:
+        return {}
+
+
 class YarnHistoryServer(HadoopNode):
     @property
     def volumes(self) -> list[str]:
         return super().volumes + [
             "scripts/run_yarn_hs.sh:/scripts/run_yarn_hs.sh"
         ]
+
+    @property
+    def environment(self) -> dict:
+        return {}
+
+    @property
+    def ports(self) -> list[str]:
+        return ["8188:8188"]
+
+    @property
+    def hosts(self) -> list[str]:
+        return [self.name]
+
+    @property
+    def name(self) -> str:
+        return "yarn-history"
+
+    @property
+    def more_options(self) -> dict:
+        return {}
