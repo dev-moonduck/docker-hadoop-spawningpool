@@ -70,10 +70,8 @@ class FilesCopyRequired(ABC, HasComponentBaseDirectory, FileDiscoverable, Destin
             dest = self.get_dest(str(to_copy))
             dest.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(to_copy, dest)
-            print(dest.suffix)
             if str(dest.suffix) in [".sh", ".py"]:
-                print(dest)
-                dest.chmod(0o777)
+                os.chmod(dest, 0o755)
 
 
 class DownloadRequired(HasComponentBaseDirectory, HasConstants):
