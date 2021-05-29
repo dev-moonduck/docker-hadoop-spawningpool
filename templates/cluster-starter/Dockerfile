@@ -1,4 +1,4 @@
-FROM python:3.9.1-slim
+FROM debian:10.9-slim
 
 RUN apt update && DEBIAN_FRONTEND=noninteractive apt install -y --no-install-recommends \
       netcat \

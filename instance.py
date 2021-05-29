@@ -1,5 +1,6 @@
 from abc import ABC
 from typing import List, Dict, Set
+from constants import HasConstants
 
 
 class DockerComponent:
@@ -55,10 +56,10 @@ class MultipleComponent(DockerComponent):
             if component.more_options:
                 more_options.update(component.more_options)
         self._image = image
-        self._volumes = list(volumes)
+        self._volumes = volumes
         self._environment = environment
-        self._ports = list(ports)
-        self._hosts = list(hosts)
+        self._ports = ports
+        self._hosts = hosts
         self._more_options = more_options
         self._name = name
 
@@ -91,10 +92,10 @@ class MultipleComponent(DockerComponent):
         return self._more_options
 
 
-class ClusterStater(DockerComponent):
+class ClusterStarter(DockerComponent, HasConstants):
     @property
     def image(self) -> str:
-        return "cluster-starter"
+        return self.CLUSTER_STARTER_IMAGE_NAME
 
     @property
     def volumes(self) -> Set[str]:
@@ -122,16 +123,20 @@ class ClusterStater(DockerComponent):
 
 
 class ClusterDb(DockerComponent):
+    def __init__(self, args):
+        self._volumes = set()
+        if args.hive:
+            self._volumes.add("./hive/sql/create_db.sql:/docker-entrypoint-initdb.d/create_hive_db.sql")
+        if args.hue:
+            self._volumes.add("./hue/sql/create_db.sql:/docker-entrypoint-initdb.d/create_hue_db.sql")
+
     @property
     def image(self) -> str:
         return "postgres:13.1"
 
     @property
     def volumes(self) -> Set[str]:
-        return {
-            "hive/sql/create_db.sql:/docker-entrypoint-initdb.d/create_hive_db.sql",
-            "hue/sql/create_db.sql:/docker-entrypoint-initdb.d/create_hue_db.sql"
-        }
+        return self._volumes
 
     @property
     def environment(self) -> Dict[str, str]:
@@ -165,8 +170,8 @@ class Hue(DockerComponent):
     @property
     def volumes(self) -> Set[str]:
         return {
-            "hue/conf/hue.ini:/usr/share/hue/desktop/conf/hue.ini",
-            "hue/conf/log.conf:/usr/share/hue/desktop/conf/log.conf"
+            "./hue/conf/hue.ini:/usr/share/hue/desktop/conf/hue.ini",
+            "./hue/conf/log.conf:/usr/share/hue/desktop/conf/log.conf"
         }
 
     @property
@@ -194,18 +199,18 @@ class Hue(DockerComponent):
         }
 
 
-class HadoopNode(ABC, DockerComponent):
+class HadoopNode(ABC, DockerComponent, HasConstants):
     @property
     def image(self) -> str:
-        return "local-hadoop"
+        return self.HADOOP_IMAGE_NAME
 
     @property
     def volumes(self) -> Set[str]:
         return {
-            "hadoop/hadoop-bin:/opt/hadoop",
-            "scripts/agent.py:/scripts/agent.py",
-            "scripts/entrypoint.sh:/scripts/entrypoint.sh",
-            "scripts/initialize.sh:/scripts/initialize.sh"
+            "./cluster-starter/agent.py:/scripts/agent.py",
+            "./hadoop/hadoop-bin:/opt/hadoop",
+            "./hadoop/scripts/entrypoint.sh:/scripts/entrypoint.sh",
+            "./hadoop/scripts/initialize.sh:/scripts/initialize.sh"
         }
 
     @property
@@ -233,7 +238,7 @@ class PrimaryNamenode(HadoopNode):
     @property
     def volumes(self) -> Set[str]:
         super().volumes.union({
-            "scripts/run_active_nn.sh:/scripts/run_active_nn.sh"
+            "./hadoop/scripts/run_active_nn.sh:/scripts/run_active_nn.sh"
         })
         return super().volumes
 
@@ -262,7 +267,7 @@ class SecondaryNamenode(HadoopNode):
     @property
     def volumes(self) -> Set[str]:
         return super().volumes.union({
-            "scripts/run_standby_nn.sh:/scripts/run_standby_nn.sh"
+            "./hadoop/scripts/run_standby_nn.sh:/scripts/run_standby_nn.sh"
         })
 
     @property
@@ -286,21 +291,20 @@ class SecondaryNamenode(HadoopNode):
         return {}
 
 
-class JournalNode(HadoopNode):
-    def __init__(self, id):
-        self.id = id
+class ZookeeperNode(HadoopNode):
+    def __init__(self, _id):
+        self._id = _id
 
     @property
     def volumes(self) -> Set[str]:
         return super().volumes.union({
-            "scripts/run_journal.sh:/scripts/run_journal.sh",
-            "scripts/run_zookeeper.sh:/scripts/run_zookeeper.sh",
-            "conf/zoo.cfg:/opt/zookeeper/zoo.cfg"
+            "./hadoop/scripts/run_zookeeper.sh:/scripts/run_zookeeper.sh",
+            "./hadoop/conf/zoo.cfg:/opt/zookeeper/zoo.cfg"
         })
 
     @property
     def environment(self) -> Dict[str, str]:
-        return {"MY_NODE_NUM": self.id}
+        return {"MY_NODE_NUM": self._id}
 
     @property
     def ports(self) -> Set[str]:
@@ -312,7 +316,38 @@ class JournalNode(HadoopNode):
 
     @property
     def name(self) -> str:
-        return "journalnode" + str(self.id)
+        return "zookeeper" + str(self._id)
+
+    @property
+    def more_options(self) -> dict:
+        return {}
+
+
+class JournalNode(HadoopNode):
+    def __init__(self, _id):
+        self._id = _id
+
+    @property
+    def volumes(self) -> Set[str]:
+        return super().volumes.union({
+            "./hadoop/scripts/run_journal.sh:/scripts/run_journal.sh"
+        })
+
+    @property
+    def environment(self) -> Dict[str, str]:
+        return {"MY_NODE_NUM": self._id}
+
+    @property
+    def ports(self) -> Set[str]:
+        return set()
+
+    @property
+    def hosts(self) -> Set[str]:
+        return {self.name}
+
+    @property
+    def name(self) -> str:
+        return "journalnode" + str(self._id)
 
     @property
     def more_options(self) -> dict:
@@ -320,14 +355,14 @@ class JournalNode(HadoopNode):
 
 
 class DataNode(HadoopNode):
-    def __init__(self, id):
-        self.id = id
+    def __init__(self, _id):
+        self._id = _id
 
     @property
     def volumes(self) -> Set[str]:
         return super().volumes.union({
-            "scripts/run_datanode.sh:/scripts/run_datanode.sh",
-            "scripts/run_nodemanager.sh:/scripts/run_nodemanager.sh"
+            "./hadoop/scripts/run_datanode.sh:/scripts/run_datanode.sh",
+            "./hadoop/scripts/run_nodemanager.sh:/scripts/run_nodemanager.sh"
         })
 
     @property
@@ -336,7 +371,7 @@ class DataNode(HadoopNode):
 
     @property
     def ports(self) -> Set[str]:
-        return {str(9864 + self.id - 1) + ":9864"}
+        return {str(9864 + self._id - 1) + ":9864"}
 
     @property
     def hosts(self) -> Set[str]:
@@ -344,7 +379,7 @@ class DataNode(HadoopNode):
 
     @property
     def name(self) -> str:
-        return "datanode" + str(self.id)
+        return "datanode" + str(self._id)
 
     @property
     def more_options(self) -> dict:
@@ -355,7 +390,7 @@ class ResourceManager(HadoopNode):
     @property
     def volumes(self) -> Set[str]:
         return super().volumes.union({
-           "scripts/run_rm.sh:/scripts/run_rm.sh"
+           "./hadoop/scripts/run_rm.sh:/scripts/run_rm.sh"
         })
 
     @property
@@ -383,7 +418,7 @@ class YarnHistoryServer(HadoopNode):
     @property
     def volumes(self) -> Set[str]:
         return super().volumes.union({
-            "scripts/run_yarn_hs.sh:/scripts/run_yarn_hs.sh"
+            "./hadoop/scripts/run_yarn_hs.sh:/scripts/run_yarn_hs.sh"
         })
 
     @property

@@ -7,7 +7,7 @@ except ImportError:
 import copy
 from collections import OrderedDict
 from instance import DockerComponent, MultipleComponent, PrimaryNamenode, SecondaryNamenode, JournalNode, DataNode, \
-    ResourceManager, YarnHistoryServer
+    ResourceManager, YarnHistoryServer, ClusterStarter, ClusterDb, ZookeeperNode
 from argparse import Namespace
 from typing import List
 
@@ -15,15 +15,7 @@ from typing import List
 
 DOCKER_COMPOSE_YAML = OrderedDict({
     "version": "3",
-    "services": {
-        "cluster-starter": {
-            "image": "cluster-starter",
-            "container_name": "cluster-starter",
-            "networks": {
-                "hadoop.net": None
-            }
-        }
-    },
+    "services": {},
     "networks": {
         "hadoop.net": {
             "external": True
@@ -49,13 +41,13 @@ def generate_yaml(instances: List[DockerComponent]):
             "tty": True
         }
         if getattr(instance, "ports") and instance.ports:
-            instance_conf["ports"] = instance.ports
+            instance_conf["ports"] = list(instance.ports)
 
         if getattr(instance, "hosts") and instance.hosts:
-            instance_conf["networks"]["hadoop.net"] = {"aliases": instance.hosts}
+            instance_conf["networks"]["hadoop.net"] = {"aliases": list(instance.hosts)}
 
         if getattr(instance, "volumes") and instance.volumes:
-            instance_conf["volumes"] = instance.volumes
+            instance_conf["volumes"] = list(instance.volumes)
 
         if getattr(instance, "environment") and instance.environment:
             instance_conf["environment"] = instance.environment
@@ -91,12 +83,16 @@ def generate_yaml(instances: List[DockerComponent]):
 
 
 def build_components(args: Namespace) -> List[DockerComponent]:
-    primary_nn = [PrimaryNamenode(), JournalNode(1), YarnHistoryServer()]
-    secondary_nn = [SecondaryNamenode(), JournalNode(2), ResourceManager()]
-    datanode1 = [DataNode(1), JournalNode(3)]
+    components = [ClusterStarter()]
 
-    return [
-        MultipleComponent("primary-namenode", primary_nn),
-        MultipleComponent("secondary-namenode", secondary_nn),
-        MultipleComponent("datanode1", datanode1)
-    ]
+    if args.all or args.hive or args.hue:
+        components.append(ClusterDb(args))
+    primary_nn = [PrimaryNamenode(), JournalNode(1), ZookeeperNode(1), YarnHistoryServer()]
+    secondary_nn = [SecondaryNamenode(), JournalNode(2), ZookeeperNode(2), ResourceManager()]
+    datanode1 = [DataNode(1), JournalNode(3), ZookeeperNode(3)]
+
+    components.append(MultipleComponent("primary-namenode", primary_nn))
+    components.append(MultipleComponent("secondary-namenode", secondary_nn))
+    components.append(MultipleComponent("datanode1", datanode1))
+
+    return components
