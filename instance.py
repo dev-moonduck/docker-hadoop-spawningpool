@@ -173,7 +173,7 @@ class Hue(DockerComponent):
         }
         if args.hive or args.all:
             hive = HiveNode()
-            _volume.union(hive.volumes)
+            _volume = _volume.union(hive.volumes)
             _env.update(hive.environment)
         self._volume = _volume
         self._env = _env
