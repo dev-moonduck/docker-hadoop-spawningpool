@@ -8,6 +8,7 @@ from component import DownloadRequired, DecompressRequired, FilesCopyRequired, T
 from pathlib import Path
 from jinja2 import Environment, StrictUndefined
 from constants import HasConstants
+import os
 
 
 class RandomUtil:
@@ -94,3 +95,9 @@ class TemplateUtil(HasConstants):
     def _values(obj):
         return obj.values()
 
+
+class FileUtil(HasConstants):
+    @classmethod
+    def write_to_target(cls, relative_path, content):
+        with open(os.path.join(cls.TARGET_BASE_PATH, relative_path), 'w') as f:
+            f.write(content)
