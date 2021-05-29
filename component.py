@@ -318,7 +318,7 @@ class Spark(Component, FilesCopyRequired, TemplateRequired, DownloadRequired, De
         return {}
 
 
-class SparkHistory(Component, FilesCopyRequired, HasData):
+class SparkHistory(Component, TemplateRequired, FilesCopyRequired, HasData):
     @property
     def component_base_dir(self) -> str:
         return os.path.join(self.TARGET_BASE_PATH, "spark-history")

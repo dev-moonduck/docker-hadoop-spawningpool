@@ -8,7 +8,7 @@ import copy
 from collections import OrderedDict
 from instance import DockerComponent, MultipleComponent, PrimaryNamenode, SecondaryNamenode, JournalNode, DataNode, \
     ResourceManager, YarnHistoryServer, ClusterStarter, ClusterDb, ZookeeperNode, HiveServer, HiveMetastore, \
-    SparkNode, SparkHistory, SparkThrift
+    SparkNode, SparkHistory, SparkThrift, Hue
 from argparse import Namespace
 from typing import List
 
@@ -89,4 +89,6 @@ def build_components(args: Namespace) -> List[DockerComponent]:
     for i in range(2, args.num_datanode + 1):
         components.append(DataNode(i))
 
+    if args.hue or args.all:
+        components.append(Hue(args))
     return components

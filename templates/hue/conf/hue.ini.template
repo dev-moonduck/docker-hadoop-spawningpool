@@ -1161,7 +1161,7 @@
       resourcemanager_host={{resource_manager["host"]}}
 
       # The port where the ResourceManager IPC listens on
-      ## resourcemanager_port=8032
+      resourcemanager_port={{resource_manager["port"]}}
 
       # Whether to submit jobs to this cluster
       submit_to=True
@@ -1182,7 +1182,9 @@
       history_server_api_url=http://{{yarn_history["host"]}}:{{yarn_history["port"]}}
 
       # URL of the Spark History Server
-      ## spark_history_server_url=http://localhost:18088
+      {% if spark_history is defined %}
+      spark_history_server_url=http://{{spark_history["host"]}}:{{spark_history["port"]}}
+      {% endif %}
 
       # Change this if your Spark History Server is Kerberos-secured
       ## spark_history_server_security_enabled=false
@@ -1195,7 +1197,7 @@
     # Redefine different properties there.
     # e.g.
 
-    # [[[ha]]]
+    [[[ha]]]
       # Resource Manager logical name (required for HA)
       ## logical_name=my-rm-name
 
@@ -1203,7 +1205,7 @@
       ## submit_to=True
 
       # URL of the ResourceManager API
-      ## resourcemanager_api_url=http://localhost:8088
+      ## resourcemanager_api_url=http://{{resource_manager["host"]}}:{{resource_manager["web-port"]}}
 
       # ...
 
@@ -1216,6 +1218,7 @@
 
   # Host where HiveServer2 is running.
   # If Kerberos security is enabled, use fully-qualified domain name (FQDN).
+  {% if hive_server is defined %}
   hive_server_host={{hive_server["host"]}}
 
   # Binary thrift port for HiveServer2.
@@ -1223,7 +1226,7 @@
 
   # Http thrift port for HiveServer2.
   hive_server_http_port={{hive_server["http-port"]}}
-
+  {% endif %}
   # Host where LLAP is running
   ## llap_server_host = localhost
 
@@ -1263,6 +1266,7 @@
 
   # Host where Hive Metastore Server (HMS) is running.
   # If Kerberos security is enabled, the fully-qualified domain name (FQDN) is required.
+  {% if hive_metastore is defined %}
   hive_metastore_host={{hive_metastore["thrift-port"]}}
 
   # Configure the port the Hive Metastore Server runs on.
@@ -1270,7 +1274,7 @@
 
   # Hive configuration directory, where hive-site.xml is located
   hive_conf_dir=/opt/hive/conf
-
+  {% endif %}
   # Timeout in seconds for thrift calls to Hive service
   ## server_conn_timeout=120
 
@@ -1439,11 +1443,12 @@
 
   # Host of the Spark Thrift Server
   # https://spark.apache.org/docs/latest/sql-distributed-sql-engine.html
-  sql_server_host=spark-adhoc
+  {% if spark_thrift is defined %}
+  sql_server_host={{spark_thrift["host"]}}
 
   # Port of the Spark Thrift Server
-  ## sql_server_port=10000
-
+  sql_server_port={{spark_thrift["thrift-port"]}}
+  {% endif %}
   # Choose whether Hue should validate certificates received from the server.
   ## ssl_cert_ca_verify=true
 

@@ -163,22 +163,32 @@ class ClusterDb(DockerComponent):
 
 
 class Hue(DockerComponent):
+    def __init__(self, args):
+        _volume = {
+            "./hue/conf/hue.ini:/usr/share/hue/desktop/conf/hue.ini",
+            "./hue/conf/log.conf:/usr/share/hue/desktop/conf/log.conf"
+        }
+        _env = {
+            "HUE_HOME": "/usr/share/hue"
+        }
+        if args.hive or args.all:
+            hive = HiveNode()
+            _volume.union(hive.volumes)
+            _env.update(hive.environment)
+        self._volume = _volume
+        self._env = _env
+
     @property
     def image(self) -> str:
         return "gethue/hue:4.9.0"
 
     @property
     def volumes(self) -> Set[str]:
-        return {
-            "./hue/conf/hue.ini:/usr/share/hue/desktop/conf/hue.ini",
-            "./hue/conf/log.conf:/usr/share/hue/desktop/conf/log.conf"
-        }
+        return self._volume
 
     @property
     def environment(self) -> Dict[str, str]:
-        return {
-            "HUE_HOME": "/usr/share/hue"
-        }
+        return self._env
 
     @property
     def ports(self) -> Set[str]:
