@@ -237,10 +237,9 @@ class HadoopNode(ABC, DockerComponent, HasConstants):
 class PrimaryNamenode(HadoopNode):
     @property
     def volumes(self) -> Set[str]:
-        super().volumes.union({
+        return super().volumes.union({
             "./hadoop/scripts/run_active_nn.sh:/scripts/run_active_nn.sh"
         })
-        return super().volumes
 
     @property
     def environment(self) -> Dict[str, str]:
@@ -299,7 +298,7 @@ class ZookeeperNode(HadoopNode):
     def volumes(self) -> Set[str]:
         return super().volumes.union({
             "./hadoop/scripts/run_zookeeper.sh:/scripts/run_zookeeper.sh",
-            "./hadoop/conf/zoo.cfg:/opt/zookeeper/zoo.cfg"
+            "./hadoop/conf/zoo.cfg:/opt/zookeeper/conf/zoo.cfg"
         })
 
     @property
