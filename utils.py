@@ -7,6 +7,7 @@ import collections
 from component import DownloadRequired, DecompressRequired, FilesCopyRequired, TemplateRequired
 from pathlib import Path
 from jinja2 import Environment, StrictUndefined
+from constants import HasConstants
 
 
 class RandomUtil:
@@ -61,11 +62,11 @@ class DecompressUtil:
             awaitable.join()
 
 
-class TemplateUtil:
+class TemplateUtil(HasConstants):
     @classmethod
     def do_template(cls, hasTemplate: list[TemplateRequired]) -> None:
         agg_data = {
-            "clusterName": "local_hadoop"
+            "clusterName": cls.CLUSTER_NAME
         }
 
         for c in hasTemplate:

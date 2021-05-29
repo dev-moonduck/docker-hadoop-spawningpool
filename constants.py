@@ -7,6 +7,6 @@ class HasConstants:
     BASE_PATH = os.path.join(str(ROOT_PATH), "templates")
     TARGET_BASE_PATH = os.path.join(str(ROOT_PATH), "target")
     TEMPLATE_EXTENSION = "template"
-    CLUSTER_NAME = "nameservice"
+    CLUSTER_NAME = "local-nameservice1"
     HADOOP_IMAGE_NAME = "local-hadoop"
     CLUSTER_STARTER_IMAGE_NAME = "cluster-starter"

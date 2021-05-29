@@ -95,4 +95,7 @@ def build_components(args: Namespace) -> List[DockerComponent]:
     components.append(MultipleComponent("secondary-namenode", secondary_nn))
     components.append(MultipleComponent("datanode1", datanode1))
 
+    for i in range(2, args.num_datanode + 1):
+        components.append(DataNode(i))
+
     return components
