@@ -439,3 +439,76 @@ class YarnHistoryServer(HadoopNode):
     @property
     def more_options(self) -> dict:
         return {}
+
+
+class HiveBase(HadoopNode):
+    @property
+    def volumes(self) -> Set[str]:
+        return super().volumes.union({
+            "./hive/hive-bin:/opt/hive"
+        })
+
+    @property
+    def environment(self) -> Dict[str, str]:
+        hive_home = "/opt/hive"
+        return {
+            "PATH": f"$PATH:{hive_home}/bin",
+            "HIVE_CONF_DIR": f"{hive_home}/conf",
+            "HIVE_HOME": hive_home
+        }
+
+    @property
+    def ports(self) -> Set[str]:
+        raise NotImplementedError()
+
+    @property
+    def hosts(self) -> Set[str]:
+        raise NotImplementedError()
+
+    @property
+    def name(self) -> str:
+        raise NotImplementedError()
+
+    @property
+    def more_options(self) -> dict:
+        return {}
+
+
+class HiveMetastore(HiveBase):
+    @property
+    def volumes(self) -> Set[str]:
+        return super().volumes.union({
+            "./hive/scripts/run_hive_metastore.sh:/scripts/run_hive_metastore.sh"
+        })
+
+    @property
+    def ports(self) -> Set[str]:
+        return {"9083:9083"}
+
+    @property
+    def hosts(self) -> Set[str]:
+        return {self.name}
+
+    @property
+    def name(self) -> str:
+        return "hive-metastore"
+
+
+class HiveServer(HiveBase):
+    @property
+    def volumes(self) -> Set[str]:
+        return super().volumes.union({
+            "./hive/scripts/run_hive_server.sh:/scripts/run_hive_server.sh"
+        })
+
+    @property
+    def ports(self) -> Set[str]:
+        return {"10000:10000", "10001:10001", "10002:10002"}
+
+    @property
+    def hosts(self) -> Set[str]:
+        return {self.name}
+
+    @property
+    def name(self) -> str:
+        return "hive-server"
