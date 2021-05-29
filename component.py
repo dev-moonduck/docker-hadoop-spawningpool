@@ -56,6 +56,8 @@ class TemplateRequired(HasComponentBaseDirectory, FileDiscoverable, DestinationF
             dest.parent.mkdir(parents=True, exist_ok=True)
             with open(str(dest), "w") as f:
                 f.write(content)
+            if str(dest.suffix) in [".sh", ".py"]:
+                os.chmod(dest, 0o755)
 
 
 class FilesCopyRequired(ABC, HasComponentBaseDirectory, FileDiscoverable, DestinationFigurable):

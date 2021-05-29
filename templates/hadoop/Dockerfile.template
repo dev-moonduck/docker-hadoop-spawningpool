@@ -17,12 +17,10 @@ RUN apt update && DEBIAN_FRONTEND=noninteractive apt install -y --no-install-rec
       procps \
       python3 \
     && rm -rf /var/lib/apt/lists/* \
-    && mkdir /opt/hadoop-{{additional["dependency-versions"]["hadoop"]}}/logs \
-    && mkdir -p /hadoop-data/ && mkdir -p /prerun && mkdir -p /postrun && mkdir -p /config && mkdir -p /scripts && mkdir -p /env
+    && mkdir -p /hadoop-data/ && mkdir -p /prerun && mkdir -p /postrun && mkdir -p /config && mkdir -p /env
 
 # Zookeeper
 COPY --from=zookeeper:3.6.2 /apache-zookeeper-3.6.2-bin $ZOOKEEPER_HOME
-#COPY ./conf/zoo.cfg $ZOOKEEPER_HOME/conf/zoo.cfg
 
 # Define linux user and groups for hadoop users
 RUN {% for name, gid in additional["groups"].items() -%}
@@ -30,8 +28,6 @@ RUN {% for name, gid in additional["groups"].items() -%}
 {% endfor %}{% for name, user in additional["users"].items() -%}
     && useradd --uid {{user['uid']}} --no-log-init -G {{user['groups']|join(",")}} --shell /bin/bash -p {{name}} {{name}} {% if loop.last is false %}\{% endif %}
 {% endfor -%}
-
-COPY scripts/ /scripts/
 
 RUN mkdir -p /hadoop/dfs/name \
     && mkdir -p /hadoop/dfs/data \
