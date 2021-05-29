@@ -517,8 +517,7 @@ class SparkHistory(SparkNode):
     @property
     def volumes(self) -> Set[str]:
         return super().volumes.union({
-            "./spark-history/scripts/run_history_server.sh:/scripts/run_history_server.sh",
-            "./spark-history/conf/history_server.conf:/spark_history_server.conf"
+            "./spark-history/scripts/run_history_server.sh:/scripts/run_history_server.sh"
         })
 
     @property

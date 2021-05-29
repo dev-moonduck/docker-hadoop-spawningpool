@@ -1,0 +1,6 @@
+#!/bin/bash
+
+su --preserve-environment spark -c "$SPARK_HOME/sbin/start-thriftserver.sh --properties-file $SPARK_HOME/conf/history_server.conf --hiveconf hive.server2.thrift.port={{spark_thrift["thrift-port"]}} --hiveconf hive.server2.thrift.bind.host={{spark_thrift["host"]}} --hiveconf hive.server2.thrift.http.port={{spark_thrift["http-port"]}}"
+
+
+

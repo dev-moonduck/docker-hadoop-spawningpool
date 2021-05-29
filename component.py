@@ -318,7 +318,7 @@ class Spark(Component, FilesCopyRequired, TemplateRequired, DownloadRequired, De
         return {}
 
 
-class SparkHistory(Component, FilesCopyRequired, TemplateRequired, HasData):
+class SparkHistory(Component, FilesCopyRequired, HasData):
     @property
     def component_base_dir(self) -> str:
         return os.path.join(self.TARGET_BASE_PATH, "spark-history")
@@ -330,7 +330,7 @@ class SparkHistory(Component, FilesCopyRequired, TemplateRequired, HasData):
         }
 
 
-class SparkThrift(Component, TemplateRequired, HasData):
+class SparkThrift(Component, TemplateRequired, FilesCopyRequired, HasData):
     @property
     def component_base_dir(self) -> str:
         return os.path.join(self.TARGET_BASE_PATH, "spark-thrift")
@@ -386,10 +386,10 @@ class ComponentFactory:
             components.append(Hive(args))
         if args.spark_thrift or args.spark_history or args.all:
             components.append(Spark(args))
-        if args.spark_thrift or args.all:
-            components.append(SparkThrift())
         if args.spark_history or args.all:
             components.append(SparkHistory())
+        if args.spark_thrift or args.all:
+            components.append(SparkThrift())
         if args.presto or args.all:
             components.append(Presto(args))
         if args.hue or args.all:
