@@ -533,10 +533,10 @@ class SparkHistory(SparkNode):
         return "spark-history"
 
 
-class SparkThrift(SparkNode):
+class SparkThrift(SparkNode, HiveNode):
     @property
     def volumes(self) -> Set[str]:
-        return super().volumes.union({
+        return super(SparkNode, self).volumes.union(super(HiveNode, self).volumes).union({
             "./spark-thrift/scripts/run_thrift_server.sh:/scripts/run_thrift_server.sh"
         })
 
