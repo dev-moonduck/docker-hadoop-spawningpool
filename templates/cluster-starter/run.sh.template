@@ -202,7 +202,7 @@ echo "Spark history server has been up!"
 {% if spark_thrift is defined %}
 # Run Spark thrift server
 SPARK_THRIFT_ADDR="{{spark_thrift["host"]}}"
-SPARK_THRIFT_PORT={{spark_thrift["port"]}}
+SPARK_THRIFT_PORT={{spark_thrift["thrift-port"]}}
 echo "Trying to run spark thrift server..."
 agent_addr="$SPARK_THRIFT_ADDR:$AGENT_PORT"
 wait_agent $agent_addr

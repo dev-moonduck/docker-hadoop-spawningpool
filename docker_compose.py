@@ -7,7 +7,8 @@ except ImportError:
 import copy
 from collections import OrderedDict
 from instance import DockerComponent, MultipleComponent, PrimaryNamenode, SecondaryNamenode, JournalNode, DataNode, \
-    ResourceManager, YarnHistoryServer, ClusterStarter, ClusterDb, ZookeeperNode, HiveServer, HiveMetastore
+    ResourceManager, YarnHistoryServer, ClusterStarter, ClusterDb, ZookeeperNode, HiveServer, HiveMetastore, \
+    SparkNode, SparkHistory, SparkThrift
 from argparse import Namespace
 from typing import List
 
@@ -73,6 +74,13 @@ def build_components(args: Namespace) -> List[DockerComponent]:
     components.append(MultipleComponent("primary-namenode", primary_nn))
 
     secondary_nn = [SecondaryNamenode(), JournalNode(2), ZookeeperNode(2), ResourceManager()]
+
+    if args.all or args.spark or args.spark_history or args.spark_thrift:
+        secondary_nn.append(SparkHistory())
+
+    if args.all or args.spark_thrift:
+        secondary_nn.append(SparkThrift())
+
     components.append(MultipleComponent("secondary-namenode", secondary_nn))
 
     datanode1 = [DataNode(1), JournalNode(3), ZookeeperNode(3)]

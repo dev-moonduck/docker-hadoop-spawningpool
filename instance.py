@@ -491,3 +491,65 @@ class HiveServer(HiveNode):
     @property
     def name(self) -> str:
         return "hive-server"
+
+
+# - ./spark/spark-bin:/opt/spark
+#     - ./spark-history/scripts/run_history_server.sh:/scripts/run_history_server.sh
+#     - ./spark-thrift/scripts/run_thrift_server.sh:/scripts/run_thrift_server.sh
+#     - ./spark-history/conf/history_server.conf:/spark_history_server.conf
+class SparkNode(HadoopNode):
+    @property
+    def volumes(self) -> Set[str]:
+        return super().volumes.union({"./spark/spark-bin:/opt/spark"})
+
+    @property
+    def environment(self) -> Dict[str, str]:
+        env = super().environment
+        env.update({"SPARK_HOME": "/opt/spark"})
+        return env
+
+    @property
+    def more_options(self) -> dict:
+        return {}
+
+
+class SparkHistory(SparkNode):
+    @property
+    def volumes(self) -> Set[str]:
+        return super().volumes.union({
+            "./spark-history/scripts/run_history_server.sh:/scripts/run_history_server.sh",
+            "./spark-history/conf/history_server.conf:/spark_history_server.conf"
+        })
+
+    @property
+    def ports(self) -> Set[str]:
+        return {"18080:18080"}
+
+    @property
+    def hosts(self) -> Set[str]:
+        return {self.name}
+
+    @property
+    def name(self) -> str:
+        return "spark-history"
+
+
+class SparkThrift(SparkNode):
+    @property
+    def volumes(self) -> Set[str]:
+        return super().volumes.union({
+            "./spark-thrift/scripts/run_thrift_server.sh:/scripts/run_thrift_server.sh"
+        })
+
+    @property
+    def ports(self) -> Set[str]:
+        return {"10010:10000", "10011:10001"}
+
+    @property
+    def hosts(self) -> Set[str]:
+        return {self.name}
+
+    @property
+    def name(self) -> str:
+        return "spark-thrift"
+

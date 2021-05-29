@@ -12,6 +12,7 @@ def parse_arg() -> Namespace:
 
     # Enable/disable components
     parser.add_argument("--hive", action='store_true', help="build hive server, metastore")
+    parser.add_argument("--spark", action='store_true', help="download spark")
     parser.add_argument("--spark-history", action='store_true', help="download spark and run spark history server")
     parser.add_argument("--spark-thrift", action='store_true', help="download spark and run spark thrift server")
     parser.add_argument("--hue", action='store_true', help="build hue")

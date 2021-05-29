@@ -325,7 +325,9 @@ class SparkHistory(Component, FilesCopyRequired, TemplateRequired, HasData):
 
     @property
     def data(self) -> dict:
-        return {}
+        return {
+            "spark_history": {"host": "spark-history", "port": "18080"}
+        }
 
 
 class SparkThrift(Component, TemplateRequired, HasData):
@@ -335,7 +337,9 @@ class SparkThrift(Component, TemplateRequired, HasData):
 
     @property
     def data(self) -> dict:
-        return {}
+        return {
+            "spark_thrift": {"host": "spark-thrift", "thrift-port": "10010", "http-port": "10011"}
+        }
 
 
 class Presto(Component, FilesCopyRequired, TemplateRequired, DownloadRequired, HasData):

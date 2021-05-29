@@ -1,0 +1,8 @@
+spark.history.fs.logDirectory=hdfs://{{clusterName}}/tmp/
+spark.history.fs.update.interval=10s
+spark.yarn.populateHadoopClasspath=true
+spark.driver.memory=4g
+spark.eventLog.enabled=true
+spark.hive.hive.server2.thrift.port={{spark_thrift["thrift-port"]}}
+spark.hive.hive.server2.thrift.bind.host={{spark_thrift["host"]}}
+spark.hive.hive.server2.thrift.http.port={{spark_thrift["http-port"]}}
