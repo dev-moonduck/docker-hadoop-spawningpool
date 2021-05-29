@@ -165,6 +165,7 @@ class Hue(Component, FilesCopyRequired, TemplateRequired, HasData):
             }
         }
 
+
 class Hadoop(Component, FilesCopyRequired, TemplateRequired, DownloadRequired, DecompressRequired, HasData):
     TAR_FILE_NAME = "hadoop.tar.gz"
     PREDEF_GROUPS = {

@@ -99,7 +99,7 @@ class ClusterStarter(DockerComponent, HasConstants):
 
     @property
     def volumes(self) -> Set[str]:
-        return set()
+        return {"./cluster-starter/run.sh:/scripts/run.sh"}
 
     @property
     def environment(self) -> Dict[str, str]:
@@ -215,7 +215,7 @@ class HadoopNode(ABC, DockerComponent, HasConstants):
 
     @property
     def environment(self) -> Dict[str, str]:
-        raise NotImplementedError()
+        return {}
 
     @property
     def ports(self) -> Set[str]:
@@ -242,10 +242,6 @@ class PrimaryNamenode(HadoopNode):
         })
 
     @property
-    def environment(self) -> Dict[str, str]:
-        return {}
-
-    @property
     def ports(self) -> Set[str]:
         return {"9870:9870"}
 
@@ -268,10 +264,6 @@ class SecondaryNamenode(HadoopNode):
         return super().volumes.union({
             "./hadoop/scripts/run_standby_nn.sh:/scripts/run_standby_nn.sh"
         })
-
-    @property
-    def environment(self) -> Dict[str, str]:
-        return {}
 
     @property
     def ports(self) -> Set[str]:
@@ -303,7 +295,9 @@ class ZookeeperNode(HadoopNode):
 
     @property
     def environment(self) -> Dict[str, str]:
-        return {"MY_NODE_NUM": self._id}
+        env = super().environment
+        env.update({"MY_NODE_NUM": self._id})
+        return env
 
     @property
     def ports(self) -> Set[str]:
@@ -331,10 +325,6 @@ class JournalNode(HadoopNode):
         return super().volumes.union({
             "./hadoop/scripts/run_journal.sh:/scripts/run_journal.sh"
         })
-
-    @property
-    def environment(self) -> Dict[str, str]:
-        return {"MY_NODE_NUM": self._id}
 
     @property
     def ports(self) -> Set[str]:
@@ -365,10 +355,6 @@ class DataNode(HadoopNode):
         })
 
     @property
-    def environment(self) -> Dict[str, str]:
-        return {}
-
-    @property
     def ports(self) -> Set[str]:
         return {str(9864 + self._id - 1) + ":9864"}
 
@@ -391,10 +377,6 @@ class ResourceManager(HadoopNode):
         return super().volumes.union({
            "./hadoop/scripts/run_rm.sh:/scripts/run_rm.sh"
         })
-
-    @property
-    def environment(self) -> Dict[str, str]:
-        return {}
 
     @property
     def ports(self) -> Set[str]:
@@ -421,10 +403,6 @@ class YarnHistoryServer(HadoopNode):
         })
 
     @property
-    def environment(self) -> Dict[str, str]:
-        return {}
-
-    @property
     def ports(self) -> Set[str]:
         return {"8188:8188"}
 
@@ -441,7 +419,7 @@ class YarnHistoryServer(HadoopNode):
         return {}
 
 
-class HiveBase(HadoopNode):
+class HiveNode(HadoopNode):
     @property
     def volumes(self) -> Set[str]:
         return super().volumes.union({
@@ -451,11 +429,12 @@ class HiveBase(HadoopNode):
     @property
     def environment(self) -> Dict[str, str]:
         hive_home = "/opt/hive"
-        return {
-            "PATH": f"$PATH:{hive_home}/bin",
+        env = super().environment
+        env.update({
             "HIVE_CONF_DIR": f"{hive_home}/conf",
             "HIVE_HOME": hive_home
-        }
+        })
+        return env
 
     @property
     def ports(self) -> Set[str]:
@@ -474,7 +453,7 @@ class HiveBase(HadoopNode):
         return {}
 
 
-class HiveMetastore(HiveBase):
+class HiveMetastore(HiveNode):
     @property
     def volumes(self) -> Set[str]:
         return super().volumes.union({
@@ -494,7 +473,7 @@ class HiveMetastore(HiveBase):
         return "hive-metastore"
 
 
-class HiveServer(HiveBase):
+class HiveServer(HiveNode):
     @property
     def volumes(self) -> Set[str]:
         return super().volumes.union({
