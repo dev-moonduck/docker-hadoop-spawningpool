@@ -1,6 +1,6 @@
 #!/bin/bash
 
-THIS_LOCATION="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+THIS_LOCATION="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )/../"
 
 build_cluster_starter() {
   docker build -t {{additional["image"]["cluster-starter"]}} $THIS_LOCATION/cluster-starter/
