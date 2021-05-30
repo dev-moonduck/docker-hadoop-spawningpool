@@ -3,11 +3,11 @@
 THIS_LOCATION="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 
 build_cluster_starter() {
-  docker build -t {{additional["image-name"]["cluster-starter"]}} $THIS_LOCATION/cluster-starter/
+  docker build -t {{additional["image"]["cluster-starter"]}} $THIS_LOCATION/cluster-starter/
 }
 
 build_hadoop() {
-  docker build -t {{additional["image-name"]["hadoop"]}} $THIS_LOCATION/hadoop/
+  docker build -t {{additional["image"]["hadoop"]}} $THIS_LOCATION/hadoop/
 }
 
 build_all() {

@@ -141,7 +141,17 @@ class Component(ABC):
     pass
 
 
-class ClusterStarter(Component, FilesCopyRequired, TemplateRequired, HasData):
+class Scripts(Component, TemplateRequired):
+    @property
+    def component_base_dir(self) -> str:
+        return os.path.join(self.TARGET_BASE_PATH, "bin")
+
+    @property
+    def data(self) -> dict:
+        return {}
+
+
+class ClusterStarter(Component, FilesCopyRequired, TemplateRequired, HasData, HasConstants):
 
     @property
     def component_base_dir(self) -> str:
@@ -149,7 +159,13 @@ class ClusterStarter(Component, FilesCopyRequired, TemplateRequired, HasData):
 
     @property
     def data(self) -> dict:
-        return {}
+        return {
+            "additional": {
+                "image": {
+                    "cluster-starter": self.CLUSTER_STARTER_IMAGE_NAME
+                }
+            }
+        }
 
 
 class Hue(Component, FilesCopyRequired, TemplateRequired, HasData):
@@ -166,7 +182,7 @@ class Hue(Component, FilesCopyRequired, TemplateRequired, HasData):
         }
 
 
-class Hadoop(Component, FilesCopyRequired, TemplateRequired, DownloadRequired, DecompressRequired, HasData):
+class Hadoop(Component, FilesCopyRequired, TemplateRequired, DownloadRequired, DecompressRequired, HasData, HasConstants):
     TAR_FILE_NAME = "hadoop.tar.gz"
     PREDEF_GROUPS = {
         "admin": 150, "hadoop": 151, "hadoopsvc": 152, "usersvc": 154, "dataplatform_user": 155
@@ -238,6 +254,9 @@ class Hadoop(Component, FilesCopyRequired, TemplateRequired, DownloadRequired, D
                 },
                 "agent": {
                     "port": "3333"
+                },
+                "image": {
+                    "hadoop": self.HADOOP_IMAGE_NAME
                 }
             }
         }
@@ -381,7 +400,7 @@ class Presto(Component, FilesCopyRequired, TemplateRequired, DownloadRequired, H
 class ComponentFactory:
     @staticmethod
     def get_components(args: Namespace) -> list[Component]:
-        components = [ClusterStarter(), Hadoop(args)]
+        components = [Scripts(), ClusterStarter(), Hadoop(args)]
         if args.hive or args.all:
             components.append(Hive(args))
         if args.spark_thrift or args.spark_history or args.all:
