@@ -7,6 +7,7 @@ Basically this is for Hadoop or Hadoop ecosystem apps test on your local with fu
 # Prerequisite
 - Python3
 - Docker
+- 16GB+ RAM laptop/desktop as it requires many resource to run.
 
 # How to start
 ```bash
@@ -60,6 +61,7 @@ $ python main.py --num-datanode 3 --hive --hue --spark-history --spark-thrift
 |  Hive   | 3.1.2 |      |
 |  Spark  | 3.1.2 | Scala 2.13    |
 |  Hue    | 4.9.0 |  Not verfied to work yet(will fix soon)   |
+|  PostgresQL  |  13.1  |  |
 
 # Predefined User and password
 Service user is added as proxy user in `core-site.xml`
@@ -96,3 +98,6 @@ Basically instance overview consists of above image
 - Support Airflow or Oozie
 - Support Sqoop
 - Support various version of each framework
+
+# Any suggestion or need support?
+Ask me through writing an issue
