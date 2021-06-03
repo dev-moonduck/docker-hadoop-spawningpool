@@ -1,5 +1,6 @@
-# Docker hadoop generator
-This is local docker hadoop cluster builder for robust Hadoop apps test.  
+# Docker hadoop spawningpool
+This is local docker hadoop cluster builder for robust Hadoop apps test.
+You can construct fully distributed Hadoop cluster on local by this script.
 This project itself doesn't contain any docker image, but it will generate/download required files, and set up hadoop ecosystems.  
 Basically this is for Hadoop or Hadoop ecosystem apps test on your local with fully distributed hadoop system.  
 
