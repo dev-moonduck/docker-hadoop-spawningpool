@@ -69,8 +69,8 @@ Service user is added as proxy user in `core-site.xml`
 | hdfs    | hdfs    | Y           | All |
 | webhdfs | webhdfs | Y           | All |
 | hive  | hive | Y | All hadoop user except admin user(hdfs, webhdfs) |
-| hive  | hue | Y | All hadoop user except admin user(hdfs, webhdfs) |
-| hive  | spark | Y | All hadoop user except admin user(hdfs, webhdfs) |
+| hue  | hue | Y | All hadoop user except admin user(hdfs, webhdfs) |
+| spark  | spark | Y | All hadoop user except admin user(hdfs, webhdfs) |
 | bi_svc | bi_svc | Y | bi_user_group |
 | bi_user | bi_user | N | N/A |
 | ml_svc | ml_svc | Y | ml_user_group |
