@@ -26,7 +26,6 @@ You can check following addresses.
 |-----------|---------|
 |  Yarn resource manager  |  localhost:8088  |
 |  Namenode(active)  |  localhost:9870  |
-|  Namenode(active)  |  localhost:9870  |
 |  Namenode(standby)  |  localhost:9871  |
 |  Datanode  |  localhost:9864, 9865, ...  |
 |  HiveServer  |  localhost:10002  |
@@ -62,6 +61,22 @@ $ python main.py --num-datanode 3 --hive --hue --spark-history --spark-thrift
 |  Spark  | 3.1.2 | Scala 2.13    |
 |  Hue    | 4.9.0 |  Not verfied to work yet(will fix soon)   |
 
+# Predefined User and password
+Service user is added as proxy user in `core-site.xml`
+
+|  name | password  | is Proxy/Service User | Proxy scope |
+|---------|---------|-------------|-------------|
+| hdfs    | hdfs    | Y           | All |
+| webhdfs | webhdfs | Y           | All |
+| hive  | hive | Y | All hadoop user except admin user(hdfs, webhdfs) |
+| hive  | hue | Y | All hadoop user except admin user(hdfs, webhdfs) |
+| hive  | spark | Y | All hadoop user except admin user(hdfs, webhdfs) |
+| bi_svc | bi_svc | Y | bi_user_group |
+| bi_user | bi_user | N | N/A |
+| ml_svc | ml_svc | Y | ml_user_group |
+| ml_user | ml_user | N | N/A |
+| de_svc | de_svc | Y | de_user_group |
+| de_user | de_user | N | N/A |
 
 # Local docker cluster overview
 ## Instances
