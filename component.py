@@ -189,17 +189,17 @@ class Hadoop(Component, FilesCopyRequired, TemplateRequired, DownloadRequired, D
     }
 
     PREDEF_USERS = {
-        "hdfs": {"uid": 180, "groups": ["admin"], "isSvc": True},
-        "webhdfs": {"uid": 181, "groups": ["admin"], "isSvc": True},
-        "hive": {"uid": 182, "groups": ["hadoopsvc"], "isSvc": True},
-        "hue": {"uid": 183, "groups": ["hadoopsvc"], "isSvc": True},
-        "spark": {"uid": 184, "groups": ["hadoopsvc"], "isSvc": True},
-        "bi_user": {"uid": 185, "groups": ["dataplatform_user"], "isSvc": False},
-        "bi_svc": {"uid": 186, "groups": ["usersvc"], "isSvc": True},
-        "ml_user": {"uid": 187, "groups": ["dataplatform_user"], "isSvc": False},
-        "ml_svc": {"uid": 188, "groups": ["usersvc"], "isSvc": True},
-        "de_user": {"uid": 189, "groups": ["dataplatform_user"], "isSvc": False},
-        "de_svc": {"uid": 190, "groups": ["usersvc"], "isSvc": True}
+        "hdfs": {"uid": 180, "groups": ["admin"], "isSvc": True, "proxyGroup": "*"},
+        "webhdfs": {"uid": 181, "groups": ["admin"], "isSvc": True, "proxyGroup": "*"},
+        "hive": {"uid": 182, "groups": ["hadoopsvc", "hadoopUser"], "isSvc": True, "proxyGroup": "hadoopUser"},
+        "hue": {"uid": 183, "groups": ["hadoopsvc", "hadoopUser"], "isSvc": True, "proxyGroup": "hadoopUser"},
+        "spark": {"uid": 184, "groups": ["hadoopsvc", "hadoopUser"], "isSvc": True, "proxyGroup": "hadoopUser"},
+        "bi_user": {"uid": 185, "groups": ["dataplatform_user", "hadoopUser"], "isSvc": False},
+        "bi_svc": {"uid": 186, "groups": ["usersvc", "hadoopUser"], "isSvc": True, "proxyGroup": "hadoopUser"},
+        "ml_user": {"uid": 187, "groups": ["dataplatform_user", "hadoopUser"], "isSvc": False},
+        "ml_svc": {"uid": 188, "groups": ["usersvc", "hadoopUser"], "isSvc": True, "proxyGroup": "hadoopUser"},
+        "de_user": {"uid": 189, "groups": ["dataplatform_user", "hadoopUser"], "isSvc": False},
+        "de_svc": {"uid": 190, "groups": ["usersvc", "hadoopUser"], "isSvc": True, "proxyGroup": "hadoopUser"}
     }
 
     def __init__(self, args: Namespace):
