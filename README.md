@@ -1,11 +1,13 @@
-# Docker hadoop generator
-This is local docker hadoop cluster builder for robust Hadoop apps test.  
+# Docker hadoop spawningpool
+This is local docker hadoop cluster builder for robust Hadoop apps test.
+You can construct fully distributed Hadoop cluster on local by this script.
 This project itself doesn't contain any docker image, but it will generate/download required files, and set up hadoop ecosystems.  
 Basically this is for Hadoop or Hadoop ecosystem apps test on your local with fully distributed hadoop system.  
 
 # Prerequisite
 - Python3
 - Docker
+- 16GB+ RAM laptop/desktop as it requires many resource to run.
 
 # How to start
 ```bash
@@ -24,7 +26,6 @@ You can check following addresses.
 |  Component  |  Address  |
 |-----------|---------|
 |  Yarn resource manager  |  localhost:8088  |
-|  Namenode(active)  |  localhost:9870  |
 |  Namenode(active)  |  localhost:9870  |
 |  Namenode(standby)  |  localhost:9871  |
 |  Datanode  |  localhost:9864, 9865, ...  |
@@ -60,7 +61,24 @@ $ python main.py --num-datanode 3 --hive --hue --spark-history --spark-thrift
 |  Hive   | 3.1.2 |      |
 |  Spark  | 3.1.2 | Scala 2.13    |
 |  Hue    | 4.9.0 |  Not verfied to work yet(will fix soon)   |
+|  PostgresQL  |  13.1  |  |
 
+# Predefined User and password
+Service user is added as proxy user in `core-site.xml`
+
+|  name | password  | is Proxy/Service User | Proxy scope |
+|---------|---------|-------------|-------------|
+| hdfs    | hdfs    | Y           | All |
+| webhdfs | webhdfs | Y           | All |
+| hive  | hive | Y | All hadoop user except admin user(hdfs, webhdfs) |
+| hue  | hue | Y | All hadoop user except admin user(hdfs, webhdfs) |
+| spark  | spark | Y | All hadoop user except admin user(hdfs, webhdfs) |
+| bi_svc | bi_svc | Y | bi_user_group |
+| bi_user | bi_user | N | N/A |
+| ml_svc | ml_svc | Y | ml_user_group |
+| ml_user | ml_user | N | N/A |
+| de_svc | de_svc | Y | de_user_group |
+| de_user | de_user | N | N/A |
 
 # Local docker cluster overview
 ## Instances
@@ -80,3 +98,6 @@ Basically instance overview consists of above image
 - Support Airflow or Oozie
 - Support Sqoop
 - Support various version of each framework
+
+# Any suggestion or need support?
+Ask me through writing an issue

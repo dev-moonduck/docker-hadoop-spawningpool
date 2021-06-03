@@ -194,12 +194,12 @@ class Hadoop(Component, FilesCopyRequired, TemplateRequired, DownloadRequired, D
         "hive": {"uid": 182, "groups": ["hadoopsvc", "hadoopUser"], "isSvc": True, "proxyGroup": "hadoopUser"},
         "hue": {"uid": 183, "groups": ["hadoopsvc", "hadoopUser"], "isSvc": True, "proxyGroup": "hadoopUser"},
         "spark": {"uid": 184, "groups": ["hadoopsvc", "hadoopUser"], "isSvc": True, "proxyGroup": "hadoopUser"},
-        "bi_user": {"uid": 185, "groups": ["dataplatform_user", "hadoopUser"], "isSvc": False},
-        "bi_svc": {"uid": 186, "groups": ["usersvc", "hadoopUser"], "isSvc": True, "proxyGroup": "hadoopUser"},
-        "ml_user": {"uid": 187, "groups": ["dataplatform_user", "hadoopUser"], "isSvc": False},
-        "ml_svc": {"uid": 188, "groups": ["usersvc", "hadoopUser"], "isSvc": True, "proxyGroup": "hadoopUser"},
-        "de_user": {"uid": 189, "groups": ["dataplatform_user", "hadoopUser"], "isSvc": False},
-        "de_svc": {"uid": 190, "groups": ["usersvc", "hadoopUser"], "isSvc": True, "proxyGroup": "hadoopUser"}
+        "bi_user": {"uid": 185, "groups": ["dataplatform_user", "hadoopUser", "bi_user_group"], "isSvc": False},
+        "bi_svc": {"uid": 186, "groups": ["usersvc", "hadoopUser"], "isSvc": True, "proxyGroup": "bi_user_group"},
+        "ml_user": {"uid": 187, "groups": ["dataplatform_user", "hadoopUser", "ml_user_group"], "isSvc": False},
+        "ml_svc": {"uid": 188, "groups": ["usersvc", "hadoopUser"], "isSvc": True, "proxyGroup": "ml_user_group"},
+        "de_user": {"uid": 189, "groups": ["dataplatform_user", "hadoopUser", "de_user_group"], "isSvc": False},
+        "de_svc": {"uid": 190, "groups": ["usersvc", "hadoopUser"], "isSvc": True, "proxyGroup": "de_user_group"}
     }
 
     def __init__(self, args: Namespace):
