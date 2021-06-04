@@ -503,10 +503,6 @@ class HiveServer(HiveNode):
         return "hive-server"
 
 
-# - ./spark/spark-bin:/opt/spark
-#     - ./spark-history/scripts/run_history_server.sh:/scripts/run_history_server.sh
-#     - ./spark-thrift/scripts/run_thrift_server.sh:/scripts/run_thrift_server.sh
-#     - ./spark-history/conf/history_server.conf:/spark_history_server.conf
 class SparkNode(HadoopNode):
     @property
     def volumes(self) -> Set[str]:
@@ -562,3 +558,90 @@ class SparkThrift(SparkNode, HiveNode):
     def name(self) -> str:
         return "spark-thrift"
 
+
+class PrestoNode(DockerComponent):
+    @property
+    def image(self) -> str:
+        return "openjdk:8-jre-slim"
+
+    @property
+    def volumes(self) -> Set[str]:
+        return {
+            "./presto/presto-bin/bin:/opt/presto/bin",
+            "./presto/presto-bin/lib:/opt/presto/lib",
+            "./presto/presto-bin/plugin:/opt/presto/plugin",
+            "./presto/scripts/run.sh:/scripts/run_presto.sh"
+        }
+
+    @property
+    def environment(self) -> Dict[str, str]:
+        return {
+            "PRESTO_HOME": "/opt/presto"
+        }
+
+    @property
+    def more_options(self) -> dict:
+        return {}
+
+
+class PrestoServer(PrestoNode):
+    @property
+    def ports(self) -> Set[str]:
+        return set(["8080:8080"])
+
+    @property
+    def hosts(self) -> Set[str]:
+        return set([self.name])
+
+    @property
+    def name(self) -> str:
+        return "presto-server"
+
+    @property
+    def volumes(self) -> Set[str]:
+        return super().volumes.union({
+            "./presto/conf/server/config.properties:/opt/presto/etc/config.properties",
+            "./presto/conf/server/jvm.config:/opt/presto/etc/jvm.config",
+            "./presto/conf/server/node.properties:/opt/presto/etc/node.properties"
+        })
+
+    @property
+    def environment(self) -> Dict[str, str]:
+        inherited = super().environment
+        inherited.update({
+            "PRESTO_NODE_ID": f"server1"
+        })
+        return inherited
+
+
+class PrestoWorker(PrestoNode):
+    def __init__(self, _id):
+        self._id = _id
+
+    @property
+    def ports(self) -> Set[str]:
+        return set()
+
+    @property
+    def hosts(self) -> Set[str]:
+        return set([self.name])
+
+    @property
+    def name(self) -> str:
+        return f"presto-worker{self._id}"
+
+    @property
+    def volumes(self) -> Set[str]:
+        return super().volumes.union({
+            "./presto/conf/worker/config.properties:/opt/presto/etc/config.properties",
+            "./presto/conf/worker/jvm.config:/opt/presto/etc/jvm.config",
+            "./presto/conf/worker/node.properties:/opt/presto/etc/node.properties"
+        })
+
+    @property
+    def environment(self) -> Dict[str, str]:
+        inherited = super().environment
+        inherited.update({
+            "PRESTO_NODE_ID": f"worker{self._id}"
+        })
+        return inherited

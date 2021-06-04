@@ -8,7 +8,7 @@ from docker_compose import build_components, generate_yaml
 def parse_arg() -> Namespace:
     # Todo: Target clean up option
     parser = ArgumentParser(description="Docker hadoop compose yaml generator")
-    parser.add_argument("--num-datanode", default=1, type=int, help="number of datanode. Default 3")
+    parser.add_argument("--num-datanode", default=1, type=int, help="number of datanode. Default 1")
 
     # Enable/disable components
     parser.add_argument("--hive", action='store_true', help="build hive server, metastore")
@@ -17,6 +17,7 @@ def parse_arg() -> Namespace:
     parser.add_argument("--spark-thrift", action='store_true', help="download spark and run spark thrift server")
     parser.add_argument("--hue", action='store_true', help="build hue")
     parser.add_argument("--presto", action='store_true', help="build presto server")
+    parser.add_argument("--num-presto-worker", default=1, type=int, help="number of presto worker")
     parser.add_argument("--presto-spark", action='store_true', help="build presto on spark")
     parser.add_argument("--all", action='store_true', help="Equivalent to --hive --spark --spark-thrift --hue --presto")
 

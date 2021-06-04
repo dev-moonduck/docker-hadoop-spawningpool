@@ -24,7 +24,7 @@
   </property>
   <property>
     <name>hadoop.proxyuser.{{user}}.groups</name>
-    <value>*</value>
+    <value>{{conf["proxyGroup"]}}</value>
   </property>
     {% endif -%}
   {% endfor -%}

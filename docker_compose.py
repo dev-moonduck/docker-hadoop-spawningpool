@@ -8,7 +8,7 @@ import copy
 from collections import OrderedDict
 from instance import DockerComponent, MultipleComponent, PrimaryNamenode, SecondaryNamenode, JournalNode, DataNode, \
     ResourceManager, YarnHistoryServer, ClusterStarter, ClusterDb, ZookeeperNode, HiveServer, HiveMetastore, \
-    SparkNode, SparkHistory, SparkThrift, Hue
+    SparkHistory, SparkThrift, Hue, PrestoServer, PrestoWorker
 from argparse import Namespace
 from typing import List
 
@@ -71,6 +71,9 @@ def build_components(args: Namespace) -> List[DockerComponent]:
         primary_nn.append(HiveServer())
         primary_nn.append(HiveMetastore())
 
+    if args.all or args.presto:
+        primary_nn.append(PrestoServer())
+
     components.append(MultipleComponent("primary-namenode", primary_nn))
 
     secondary_nn = [SecondaryNamenode(), JournalNode(2), ZookeeperNode(2), ResourceManager()]
@@ -84,11 +87,26 @@ def build_components(args: Namespace) -> List[DockerComponent]:
     components.append(MultipleComponent("secondary-namenode", secondary_nn))
 
     datanode1 = [DataNode(1), JournalNode(3), ZookeeperNode(3)]
+    if args.all or args.presto:
+        datanode1.append(PrestoWorker(1))
     components.append(MultipleComponent("datanode1", datanode1))
 
+    additional_datanodes = []
     for i in range(2, args.num_datanode + 1):
-        components.append(DataNode(i))
+        additional_datanodes.append(DataNode(i))
+
+    # Add presto worker in data node, num of presto worker does not exceed num of datanode
+    if (args.all or args.presto) and args.num_presto_worker > 1:
+        worker_cnt = 1
+        while worker_cnt < args.num_presto_worker and worker_cnt < len(additional_datanodes):
+            datanode = additional_datanodes[worker_cnt - 1]
+            additional_datanodes[worker_cnt - 1] = MultipleComponent(datanode.name, [datanode,
+                                                                                     PrestoWorker(worker_cnt + 1)])
+            worker_cnt += 1
+
+    components += additional_datanodes
 
     if args.hue or args.all:
         components.append(Hue(args))
+
     return components

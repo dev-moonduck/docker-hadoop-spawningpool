@@ -185,21 +185,22 @@ class Hue(Component, FilesCopyRequired, TemplateRequired, HasData):
 class Hadoop(Component, FilesCopyRequired, TemplateRequired, DownloadRequired, DecompressRequired, HasData, HasConstants):
     TAR_FILE_NAME = "hadoop.tar.gz"
     PREDEF_GROUPS = {
-        "admin": 150, "hadoop": 151, "hadoopsvc": 152, "usersvc": 154, "dataplatform_user": 155
+        "admin": 150, "hadoop": 151, "hadoopsvc": 152, "usersvc": 154, "dataplatform_user": 155, "hadoopUser":156,
+        "bi_user_group": 157, "ml_user_group": 158, "de_user_group": 159
     }
 
     PREDEF_USERS = {
-        "hdfs": {"uid": 180, "groups": ["admin"], "isSvc": True},
-        "webhdfs": {"uid": 181, "groups": ["admin"], "isSvc": True},
-        "hive": {"uid": 182, "groups": ["hadoopsvc"], "isSvc": True},
-        "hue": {"uid": 183, "groups": ["hadoopsvc"], "isSvc": True},
-        "spark": {"uid": 184, "groups": ["hadoopsvc"], "isSvc": True},
-        "bi_user": {"uid": 185, "groups": ["dataplatform_user"], "isSvc": False},
-        "bi_svc": {"uid": 186, "groups": ["usersvc"], "isSvc": True},
-        "ml_user": {"uid": 187, "groups": ["dataplatform_user"], "isSvc": False},
-        "ml_svc": {"uid": 188, "groups": ["usersvc"], "isSvc": True},
-        "de_user": {"uid": 189, "groups": ["dataplatform_user"], "isSvc": False},
-        "de_svc": {"uid": 190, "groups": ["usersvc"], "isSvc": True}
+        "hdfs": {"uid": 180, "groups": ["admin"], "isSvc": True, "proxyGroup": "*"},
+        "webhdfs": {"uid": 181, "groups": ["admin"], "isSvc": True, "proxyGroup": "*"},
+        "hive": {"uid": 182, "groups": ["hadoopsvc", "hadoopUser"], "isSvc": True, "proxyGroup": "hadoopUser"},
+        "hue": {"uid": 183, "groups": ["hadoopsvc", "hadoopUser"], "isSvc": True, "proxyGroup": "hadoopUser"},
+        "spark": {"uid": 184, "groups": ["hadoopsvc", "hadoopUser"], "isSvc": True, "proxyGroup": "hadoopUser"},
+        "bi_user": {"uid": 185, "groups": ["dataplatform_user", "hadoopUser", "bi_user_group"], "isSvc": False},
+        "bi_svc": {"uid": 186, "groups": ["usersvc", "hadoopUser"], "isSvc": True, "proxyGroup": "bi_user_group"},
+        "ml_user": {"uid": 187, "groups": ["dataplatform_user", "hadoopUser", "ml_user_group"], "isSvc": False},
+        "ml_svc": {"uid": 188, "groups": ["usersvc", "hadoopUser"], "isSvc": True, "proxyGroup": "ml_user_group"},
+        "de_user": {"uid": 189, "groups": ["dataplatform_user", "hadoopUser", "de_user_group"], "isSvc": False},
+        "de_svc": {"uid": 190, "groups": ["usersvc", "hadoopUser"], "isSvc": True, "proxyGroup": "de_user_group"}
     }
 
     def __init__(self, args: Namespace):
@@ -361,12 +362,13 @@ class SparkThrift(Component, TemplateRequired, FilesCopyRequired, HasData):
         }
 
 
-class Presto(Component, FilesCopyRequired, TemplateRequired, DownloadRequired, HasData):
+class Presto(Component, FilesCopyRequired, TemplateRequired, DownloadRequired, DecompressRequired, HasData):
     TAR_FILE_NAME = "presto.tar.gz"
 
     def __init__(self, args: Namespace):
         DownloadRequired.__init__(self, force_download=args.force_download_presto)
         self.presto_version = args.presto_version
+        self.num_worker = args.num_presto_worker
 
     @property
     def component_base_dir(self) -> str:
@@ -390,10 +392,7 @@ class Presto(Component, FilesCopyRequired, TemplateRequired, DownloadRequired, H
     @property
     def data(self) -> dict:
         return {
-            "presto_coordinator": {"host": "presto-coordinator", "port": "8080"},
-            "presto_worker": {
-                "host": ["presto-worker1", "presto-worker2", "presto-worker1"]
-            }
+            "presto_server": {"host": "presto-server", "port": "8081"}
         }
 
 
