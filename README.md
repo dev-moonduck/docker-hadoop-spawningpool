@@ -59,9 +59,10 @@ $ python main.py --num-datanode 3 --hive --hue --spark-history --spark-thrift
 |---------|---------|-------|
 |  Hadoop | 3.3.0 |     |
 |  Hive   | 3.1.2 |      |
-|  Spark  | 3.1.2 | Scala 2.13    |
-|  Hue    | 4.9.0 |  Not verfied to work yet(will fix soon)   |
+|  Spark  | 3.1.2 | Compiled by scala 2.13    |
+|  Hue    | 4.9.0 |     |
 |  PostgresQL  |  13.1  |  |
+|  Presto  | 0.252 |  |
 
 # Predefined User and password
 Service user is added as proxy user in `core-site.xml`
