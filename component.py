@@ -185,7 +185,8 @@ class Hue(Component, FilesCopyRequired, TemplateRequired, HasData):
 class Hadoop(Component, FilesCopyRequired, TemplateRequired, DownloadRequired, DecompressRequired, HasData, HasConstants):
     TAR_FILE_NAME = "hadoop.tar.gz"
     PREDEF_GROUPS = {
-        "admin": 150, "hadoop": 151, "hadoopsvc": 152, "usersvc": 154, "dataplatform_user": 155
+        "admin": 150, "hadoop": 151, "hadoopsvc": 152, "usersvc": 154, "dataplatform_user": 155, "hadoopUser":156,
+        "bi_user_group": 157, "ml_user_group": 158, "de_user_group": 159
     }
 
     PREDEF_USERS = {
@@ -361,12 +362,13 @@ class SparkThrift(Component, TemplateRequired, FilesCopyRequired, HasData):
         }
 
 
-class Presto(Component, FilesCopyRequired, TemplateRequired, DownloadRequired, HasData):
+class Presto(Component, FilesCopyRequired, TemplateRequired, DownloadRequired, DecompressRequired, HasData):
     TAR_FILE_NAME = "presto.tar.gz"
 
     def __init__(self, args: Namespace):
         DownloadRequired.__init__(self, force_download=args.force_download_presto)
         self.presto_version = args.presto_version
+        self.num_worker = args.num_presto_worker
 
     @property
     def component_base_dir(self) -> str:
@@ -390,10 +392,7 @@ class Presto(Component, FilesCopyRequired, TemplateRequired, DownloadRequired, H
     @property
     def data(self) -> dict:
         return {
-            "presto_coordinator": {"host": "presto-coordinator", "port": "8080"},
-            "presto_worker": {
-                "host": ["presto-worker1", "presto-worker2", "presto-worker1"]
-            }
+            "presto_server": {"host": "presto-server", "port": "8081"}
         }
 
 

@@ -17,6 +17,7 @@ RUN apt update && DEBIAN_FRONTEND=noninteractive apt install -y --no-install-rec
       procps \
       python3 \
     && rm -rf /var/lib/apt/lists/* \
+    && ln -sf /usr/bin/python3 /usr/bin/python \
     && mkdir -p /hadoop-data/ && mkdir -p /prerun && mkdir -p /postrun && mkdir -p /config && mkdir -p /env
 
 # Zookeeper

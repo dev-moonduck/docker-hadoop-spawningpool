@@ -1,0 +1,6 @@
+coordinator=false
+http-server.http.port={{presto_server["port"]}}
+query.max-memory=4GB
+query.max-memory-per-node=512MB
+query.max-total-memory-per-node=1GB
+discovery.uri=http://{{presto_server["host"]}}:{{presto_server["port"]}}

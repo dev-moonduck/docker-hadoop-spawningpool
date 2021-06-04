@@ -210,4 +210,16 @@ run_remote_script $agent_addr "/scripts/run_thrift_server.sh"
 wait_for_it "$SPARK_THRIFT_ADDR:$SPARK_THRIFT_PORT"
 echo "Spark thrift server has been up!"
 {% endif %}
+
+{% if presto_server is defined %}
+# Run Spark thrift server
+PRESTO_SERVER_ADDR="{{presto_server["host"]}}"
+PRESTO_SERVER_PORT={{presto_server["port"]}}
+echo "Trying to run presto server..."
+agent_addr="$PRESTO_SERVER_ADDR:$AGENT_PORT"
+wait_agent $agent_addr
+run_remote_script $agent_addr "/scripts/run_presto.sh"
+wait_for_it "$PRESTO_SERVER_ADDR:$PRESTO_SERVER_PORT"
+echo "Presto server has been up!"
+{% endif %}
 exit 0
