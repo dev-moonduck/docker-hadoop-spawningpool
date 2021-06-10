@@ -23,14 +23,15 @@ Once it's done, you can run `builder.sh` and run `docker-compose up -d`.
 Finally you can see the all cluster up after 3~5min once you run the command(you may have to wait for more)  
 You can check following addresses.
 
-|  Component  |  Address  |
-|-----------|---------|
-|  Yarn resource manager  |  localhost:8088  |
-|  Namenode(active)  |  localhost:9870  |
-|  Namenode(standby)  |  localhost:9871  |
-|  Datanode  |  localhost:9864, 9865, ...  |
-|  HiveServer  |  localhost:10002  |
-|  Hue  |  localhost:8888 |
+|  Component  |  Address  | Misc   |
+|-----------|---------|------------|
+|  Yarn resource manager  |  localhost:8088  |  |
+|  Namenode(active)  |  localhost:9870  |  |
+|  Namenode(standby)  |  localhost:9871  |  |
+|  Datanode  |  localhost:9864, 9865, ...  |  |
+|  HiveServer  |  localhost:10002  |  |
+|  Hue  |  localhost:8888 |  |
+|  Presto  | localhost:8081 |  |
 
 
 # Options
@@ -59,9 +60,10 @@ $ python main.py --num-datanode 3 --hive --hue --spark-history --spark-thrift
 |---------|---------|-------|
 |  Hadoop | 3.3.0 |     |
 |  Hive   | 3.1.2 |      |
-|  Spark  | 3.1.2 | Scala 2.13    |
-|  Hue    | 4.9.0 |  Not verfied to work yet(will fix soon)   |
+|  Spark  | 3.1.2 | Compiled by scala 2.13    |
+|  Hue    | 4.9.0 |     |
 |  PostgresQL  |  13.1  |  |
+|  Presto  | 0.252 |  |
 
 # Predefined User and password
 Service user is added as proxy user in `core-site.xml`
