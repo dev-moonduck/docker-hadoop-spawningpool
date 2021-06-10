@@ -50,6 +50,10 @@ Enable spark history server. Spark history instance will be included in an insta
 5. `--spark-thrift`
 Enable spark thrift server. Spark thrift server will be included in an instance.
    
+6. `--presto`, `--num-presto-worker`
+Enable standalone presto. Presto server will run on primary-namenode instance, also presto workers will run on datanodes
+   
+
 # Example
 ```bash
 $ python main.py --num-datanode 3 --hive --hue --spark-history --spark-thrift
