@@ -88,18 +88,18 @@ Service user is added as proxy user in `core-site.xml`
 
 # Local docker cluster overview
 ## Instances
-![docker-instances](./images/docker-instances.png)
+![docker-instances](./images/docker-instances.png)  
 Basically instance overview consists of above image
-- Instance `primary-namenode` contains active namenode, yarn history server, journalnode, zookeeper and optionally Hive server and metastore.
+- Instance `primary-namenode` contains active namenode, yarn history server, journalnode, zookeeper and optionally Hive server, metastore and presto server
 - Instance `secondary-namenode` contains standby namenode, resource manager, journal node, zookeeper and optionally spark thrift and history server.
 - Instance `Datanode1` contains journalnode, zookeeper, datanode and node manager.
 - If you specify `--num-datanode` more than 1, additional datanode will be instantiated.
 - If user specify `--hue`, Hue instance will be added
 - Cluster starter is temporary instantiated, it loads all hadoop components and prepare all initial state in order. After All cluster are ready to serve, Cluster starter is terminated.
+- If user specify `--presto`, Presto workers run on data node
 
 
 # Road map 
-- Support Presto
 - Support Kafka
 - Support Airflow or Oozie
 - Support Sqoop
