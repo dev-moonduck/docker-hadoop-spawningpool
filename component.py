@@ -391,8 +391,10 @@ class Presto(Component, FilesCopyRequired, TemplateRequired, DownloadRequired, D
 
     @property
     def data(self) -> dict:
+        workers = [{"host": "presto-worker" + str(i)} for i in range(1, self.num_worker + 1)]
         return {
-            "presto_server": {"host": "presto-server", "port": "8081"}
+            "presto_server": {"host": "presto-server", "port": "8081"},
+            "presto_worker": workers
         }
 
 

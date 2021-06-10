@@ -212,14 +212,25 @@ echo "Spark thrift server has been up!"
 {% endif %}
 
 {% if presto_server is defined %}
-# Run Spark thrift server
+# Run Presto server
 PRESTO_SERVER_ADDR="{{presto_server["host"]}}"
 PRESTO_SERVER_PORT={{presto_server["port"]}}
 echo "Trying to run presto server..."
 agent_addr="$PRESTO_SERVER_ADDR:$AGENT_PORT"
 wait_agent $agent_addr
 run_remote_script $agent_addr "/scripts/run_presto.sh"
-wait_for_it "$PRESTO_SERVER_ADDR:$PRESTO_SERVER_PORT"
+#wait_for_it "$PRESTO_SERVER_ADDR:$PRESTO_SERVER_PORT"
 echo "Presto server has been up!"
+{% endif %}
+
+{% if presto_worker is defined %}
+# Run Presto worker
+{% for worker in presto_worker %}
+PRESTO_WORKER_ADDR="{{worker["host"]}}"
+echo "run presto worker..."
+agent_addr="$PRESTO_WORKER_ADDR:$AGENT_PORT"
+wait_agent $agent_addr
+run_remote_script $agent_addr "/scripts/run_presto.sh"
+{% endfor %}
 {% endif %}
 exit 0
