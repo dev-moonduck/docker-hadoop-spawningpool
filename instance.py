@@ -601,8 +601,7 @@ class PrestoServer(PrestoNode):
     def volumes(self) -> Set[str]:
         return super().volumes.union({
             "./presto/conf/server/config.properties:/opt/presto/etc/config.properties",
-            "./presto/conf/server/jvm.config:/opt/presto/etc/jvm.config",
-            "./presto/conf/server/node.properties:/opt/presto/etc/node.properties"
+            "./presto/conf/server/jvm.config:/opt/presto/etc/jvm.config"
         })
 
     @property
@@ -634,8 +633,7 @@ class PrestoWorker(PrestoNode):
     def volumes(self) -> Set[str]:
         return super().volumes.union({
             "./presto/conf/worker/config.properties:/opt/presto/etc/config.properties",
-            "./presto/conf/worker/jvm.config:/opt/presto/etc/jvm.config",
-            "./presto/conf/worker/node.properties:/opt/presto/etc/node.properties"
+            "./presto/conf/worker/jvm.config:/opt/presto/etc/jvm.config"
         })
 
     @property
