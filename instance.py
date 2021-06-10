@@ -205,7 +205,7 @@ class Hue(DockerComponent):
     @property
     def more_options(self) -> dict:
         return {
-            "mem_limit": "2g"
+            "mem_limit": "4g"
         }
 
 

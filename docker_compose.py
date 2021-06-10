@@ -98,7 +98,7 @@ def build_components(args: Namespace) -> List[DockerComponent]:
     # Add presto worker in data node, num of presto worker does not exceed num of datanode
     if (args.all or args.presto) and args.num_presto_worker > 1:
         worker_cnt = 1
-        while worker_cnt < args.num_presto_worker and worker_cnt < len(additional_datanodes):
+        while worker_cnt < args.num_presto_worker and worker_cnt <= len(additional_datanodes):
             datanode = additional_datanodes[worker_cnt - 1]
             additional_datanodes[worker_cnt - 1] = MultipleComponent(datanode.name, [datanode,
                                                                                      PrestoWorker(worker_cnt + 1)])
