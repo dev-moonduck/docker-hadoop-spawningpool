@@ -23,14 +23,15 @@ Once it's done, you can run `builder.sh` and run `docker-compose up -d`.
 Finally you can see the all cluster up after 3~5min once you run the command(you may have to wait for more)  
 You can check following addresses.
 
-|  Component  |  Address  |
-|-----------|---------|
-|  Yarn resource manager  |  localhost:8088  |
-|  Namenode(active)  |  localhost:9870  |
-|  Namenode(standby)  |  localhost:9871  |
-|  Datanode  |  localhost:9864, 9865, ...  |
-|  HiveServer  |  localhost:10002  |
-|  Hue  |  localhost:8888 |
+|  Component  |  Address  | Misc   |
+|-----------|---------|------------|
+|  Yarn resource manager  |  localhost:8088  |  |
+|  Namenode(active)  |  localhost:9870  |  |
+|  Namenode(standby)  |  localhost:9871  |  |
+|  Datanode  |  localhost:9864, 9865, ...  |  |
+|  HiveServer  |  localhost:10002  |  |
+|  Hue  |  localhost:8888 |  |
+|  Presto  | localhost:8081 |  |
 
 
 # Options
